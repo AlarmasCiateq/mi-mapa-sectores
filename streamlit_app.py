@@ -9,7 +9,7 @@ from streamlit_folium import st_folium
 from streamlit_autorefresh import st_autorefresh
 from shapely.geometry import shape
 
-MAX_PRESION = 7.0  # kg/cm²
+MAX_PRESION = 3.0  # kg/cm²
 
 # --- URL DEL ARCHIVO JSON EN GOOGLE DRIVE ---
 GOOGLE_DRIVE_JSON_URL = "https://drive.google.com/uc?export=download&id=1lhOfMwDaJYsOHGZhoS3kNTNQ8WCZcfPW"
@@ -219,6 +219,7 @@ with col1:
 with col2:
 
     st.markdown("**Opacidad:** Mínimo (20%) = baja presión - Máximo (70%) = alta presión")
+
 
 
 
