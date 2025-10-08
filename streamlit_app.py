@@ -136,7 +136,7 @@ def mostrar_mapa():
 
     # Configurar mapa
     centro = [24.117124, -110.358397]
-    m = folium.Map(location=centro, zoom_start=13, name="main_map")
+    m = folium.Map(location=centro, zoom_start=12, name="main_map")
     m.add_child(Fullscreen(position='topleft'))
 
     # Añadir cada sector
@@ -217,6 +217,7 @@ with col1:
 with col2:
 
     st.markdown("**Opacidad:** Mínimo (20%) = baja presión - Máximo (70%) = alta presión")
+
 
 
 
