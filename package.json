@@ -1,0 +1,7 @@
+{
+  "name": "mi-mapa-sectores",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "python -m streamlit.cli run streamlit_app.py --server.port=3000"
+  }
+}
