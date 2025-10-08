@@ -9,6 +9,9 @@ from streamlit_folium import st_folium
 from streamlit_autorefresh import st_autorefresh
 from shapely.geometry import shape
 
+# --- URL DEL ARCHIVO JSON EN GOOGLE DRIVE ---
+GOOGLE_DRIVE_JSON_URL = "https://drive.google.com/uc?export=download&id=1lhOfMwDaJYsOHGZhoS3kNTNQ8WCZcfPW"
+
 # --- CONFIGURACIÓN DE LA PÁGINA ---
 st.set_page_config(
     page_title="Sectores Hidráulicos",
@@ -26,7 +29,7 @@ st.markdown(
         right: 15px;
         z-index: 999999999;
         color: white;
-        font-size: 1.2em;
+        font-size: 1.3em;
         background-color: #111;
         padding: 5px 10px;
         border-radius: 8px;
@@ -42,6 +45,20 @@ st.markdown(
 # --- OCULTAR BOTÓN DEL SIDEBAR ---
 st.html(
     """
+    <div id="hide-sidebar-toggle"></div>
+    <script>
+        const observer = new MutationObserver(() => {
+            const button = document.querySelector('button[data-testid="stSidebarHeaderToggle"]');
+            if (button) {
+                button.style.display = 'none !important';
+                button.parentElement.style.visibility = 'hidden !important';
+                button.parentElement.style.width = '0px !important';
+                button.parentElement.style.padding = '0px !important';
+                observer.disconnect();
+            }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+    </script>
     <style>
         button[data-testid="stSidebarHeaderToggle"] { display: none !important; }
         [data-testid="stSidebarHeader"] { display: none !important; }
@@ -49,11 +66,10 @@ st.html(
     """
 )
 
+
 # --- AUTOREFRESH CADA 10 SEGUNDOS ---
 st_autorefresh(interval=60000, key="data_reloader")
 
-# --- URL DEL ARCHIVO JSON EN GOOGLE DRIVE ---
-GOOGLE_DRIVE_JSON_URL = "https://drive.google.com/uc?export=download&id=1lhOfMwDaJYsOHGZhoS3kNTNQ8WCZcfPW"
 
 # --- FUNCIONES ---
 
@@ -116,7 +132,7 @@ def mostrar_mapa():
 
     # Configurar mapa
     centro = [24.117124, -110.358397]
-    m = folium.Map(location=centro, zoom_start=12, name="main_map")
+    m = folium.Map(location=centro, zoom_start=13, name="main_map")
     m.add_child(Fullscreen(position='topleft'))
 
     # Añadir cada sector
@@ -197,4 +213,5 @@ with col1:
 with col2:
 
     st.markdown("**Opacidad:** Mínimo (20%) = baja presión - Máximo (70%) = alta presión")
+
 
