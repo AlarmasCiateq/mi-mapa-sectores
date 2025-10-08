@@ -9,6 +9,8 @@ from streamlit_folium import st_folium
 from streamlit_autorefresh import st_autorefresh
 from shapely.geometry import shape
 
+MAX_PRESION = 7.0  # kg/cm²
+
 # --- URL DEL ARCHIVO JSON EN GOOGLE DRIVE ---
 GOOGLE_DRIVE_JSON_URL = "https://drive.google.com/uc?export=download&id=1lhOfMwDaJYsOHGZhoS3kNTNQ8WCZcfPW"
 
@@ -78,7 +80,7 @@ def interpolar_color(valor):
     valor: float entre 0 y 15
     """
     # Normalizar de [0, 15] a [0, 1]
-    pct = max(0.0, min(valor / 7.0, 1.0))  # Asegura que esté entre 0 y 1
+    pct = max(0.0, min(valor / MAX_PRESION, 1.0))  # Asegura que esté entre 0 y 1
     r = int(255 * pct)
     g = int(255 * (1 - pct))
     b = 0
@@ -145,7 +147,7 @@ def mostrar_mapa():
         sector_data = estado_presion_raw.get(nombre, {})
         valor_entrada = sector_data.get("valor", 0.0)
         fill_color = interpolar_color(valor_entrada)
-        fill_opacity = 0.2 + 0.5 * (valor_entrada / 15.0)  # de 0.2 (0 kg/cm²) a 0.7 (15 kg/cm²)
+        fill_opacity = 0.2 + 0.5 * (valor_entrada / MAX_PRESION)  # de 0.2 (0 kg/cm²) a 0.7 (15 kg/cm²)
         timestamp = sector_data.get("timestamp", "N/A")
         rssi = sector_data.get("rssi", "N/A")
         valor_con_unidad = f"{valor_entrada:.2f}kg/cm³"
@@ -167,7 +169,7 @@ def mostrar_mapa():
         <b>{nombre}</b>
         <table style="font-size: 11px; font-family: Arial, sans-serif;">
         <tr><td>Presión: </td><td>{valor_con_unidad}</td></tr>
-        <tr><td>Último Valor: </td><td>{timestamp}</td></tr>
+        <tr><td>Hora: </td><td>{timestamp}</td></tr>
         <tr><td>RSSI: </td><td>{rssi}</td></tr>
         </table>
         """
@@ -217,6 +219,7 @@ with col1:
 with col2:
 
     st.markdown("**Opacidad:** Mínimo (20%) = baja presión - Máximo (70%) = alta presión")
+
 
 
 
