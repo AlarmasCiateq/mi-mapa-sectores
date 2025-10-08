@@ -50,7 +50,7 @@ st.html(
 )
 
 # --- AUTOREFRESH CADA 10 SEGUNDOS ---
-st_autorefresh(interval=10000, key="data_reloader")
+st_autorefresh(interval=60000, key="data_reloader")
 
 # --- URL DEL ARCHIVO JSON EN GOOGLE DRIVE ---
 GOOGLE_DRIVE_JSON_URL = "https://drive.google.com/uc?export=download&id=1lhOfMwDaJYsOHGZhoS3kNTNQ8WCZcfPW"
@@ -197,3 +197,4 @@ with col1:
 with col2:
 
     st.markdown("**Opacidad:** Mínimo (20%) = baja presión - Máximo (70%) = alta presión")
+
