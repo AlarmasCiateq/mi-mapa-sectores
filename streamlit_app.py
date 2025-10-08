@@ -215,10 +215,11 @@ mostrar_mapa()
 st.markdown("---")
 col1, col2 = st.columns([1, 2])
 with col1:
-    st.markdown(f"Color: **0**➡Verde -- **{MAX_PRESION}**➡Rojo")
+    st.markdown(f"Color: **0**➡🟢 -- **{MAX_PRESION}**➡🔴")
 with col2:
 
     st.markdown("**Opacidad:** Mínimo (20%) = baja presión - Máximo (70%) = alta presión")
+
 
 
 
