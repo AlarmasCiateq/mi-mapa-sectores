@@ -78,7 +78,7 @@ def interpolar_color(valor):
     valor: float entre 0 y 15
     """
     # Normalizar de [0, 15] a [0, 1]
-    pct = max(0.0, min(valor / 15.0, 1.0))  # Asegura que esté entre 0 y 1
+    pct = max(0.0, min(valor / 7.0, 1.0))  # Asegura que esté entre 0 y 1
     r = int(255 * pct)
     g = int(255 * (1 - pct))
     b = 0
@@ -217,6 +217,7 @@ with col1:
 with col2:
 
     st.markdown("**Opacidad:** Mínimo (20%) = baja presión - Máximo (70%) = alta presión")
+
 
 
 
