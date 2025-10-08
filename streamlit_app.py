@@ -72,11 +72,15 @@ st_autorefresh(interval=60000, key="data_reloader")
 
 
 # --- FUNCIONES ---
-
-def interpolar_color(valor_pct):
-    """Interpola entre verde (0%) y rojo (100%)"""
-    r = int(255 * valor_pct)
-    g = int(255 * (1 - valor_pct))
+def interpolar_color(valor):
+    """
+    Interpola entre verde (0) y rojo (15)
+    valor: float entre 0 y 15
+    """
+    # Normalizar de [0, 15] a [0, 1]
+    pct = max(0.0, min(valor / 15.0, 1.0))  # Asegura que esté entre 0 y 1
+    r = int(255 * pct)
+    g = int(255 * (1 - pct))
     b = 0
     return f"#{r:02x}{g:02x}{b:02x}"
 
@@ -141,7 +145,7 @@ def mostrar_mapa():
         sector_data = estado_presion_raw.get(nombre, {})
         valor_entrada = sector_data.get("valor", 0.0)
         fill_color = interpolar_color(valor_entrada)
-        fill_opacity = 0.2 + (0.7 - 0.2) * valor_entrada
+        fill_opacity = 0.2 + 0.5 * (valor_entrada / 15.0)  # de 0.2 (0 kg/cm²) a 0.7 (15 kg/cm²)
         timestamp = sector_data.get("timestamp", "N/A")
         rssi = sector_data.get("rssi", "N/A")
         valor_con_unidad = f"{valor_entrada:.2f}kg/cm³"
@@ -213,5 +217,6 @@ with col1:
 with col2:
 
     st.markdown("**Opacidad:** Mínimo (20%) = baja presión - Máximo (70%) = alta presión")
+
 
 
