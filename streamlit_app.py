@@ -6,7 +6,7 @@ import json
 import requests
 from folium.plugins import Fullscreen
 from streamlit_folium import st_folium
-from streamlit_autorefresh import st_autorefresh
+#from streamlit_autorefresh import st_autorefresh
 from shapely.geometry import shape
 
 # --- CONFIGURACIÓN DE LA PÁGINA ---
@@ -50,7 +50,7 @@ st.html(
 )
 
 # --- AUTOREFRESH CADA 10 SEGUNDOS ---
-st_autorefresh(interval=10000, key="data_reloader")
+#st_autorefresh(interval=10000, key="data_reloader")
 
 # --- URL DEL ARCHIVO JSON EN GOOGLE DRIVE ---
 GOOGLE_DRIVE_JSON_URL = "https://drive.google.com/uc?export=download&id=1lhOfMwDaJYsOHGZhoS3kNTNQ8WCZcfPW"
@@ -195,4 +195,5 @@ col1, col2 = st.columns([1, 2])
 with col1:
     st.markdown("Color: **0%**: Verde - **100%**: Rojo")
 with col2:
+
     st.markdown("**Opacidad:** Mínimo (20%) = baja presión - Máximo (70%) = alta presión")
