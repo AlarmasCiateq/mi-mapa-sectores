@@ -4,7 +4,7 @@ from datetime import date, timedelta
 # ❌ QUITA layout="wide"
 st.set_page_config(page_title="Evolución Presión Hidráulica")
 
-st.title("💧 Evolución de Sectores Hidráulicos")
+st.st.subheader("💧 Evolución de Sectores Hidráulicos")
 
 GITHUB_USER = "alarmasciateq"  # ← tu usuario real
 
@@ -58,6 +58,7 @@ st.markdown(
 )
 
 st.caption("Los videos se generan diariamente a partir de capturas cada 5 minutos.")
+
 
 
 
