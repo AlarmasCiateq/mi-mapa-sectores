@@ -30,14 +30,12 @@ st.subheader("💧 Evolución de Sectores Hidráulicos")
 GITHUB_USER = "alarmasciateq"
 REPO_NAME = "mi-mapa-sectores"
 
-# --- OBTENER LISTA DE FECHAS CON VIDEO ---
-@st.cache_data(ttl=3600)  # Cache por 1 hora
+# --- OBTENER FECHAS CON VIDEO ---
+@st.cache_data(ttl=3600)
 def obtener_fechas_disponibles():
-    """Obtiene las fechas para las que existen videos en GitHub"""
     fechas = []
     hoy = date.today()
-    # Buscar en los últimos 30 días
-    for i in range(30):
+    for i in range(60):  # Buscar en últimos 60 días
         fecha = hoy - timedelta(days=i)
         url = f"https://{GITHUB_USER}.github.io/{REPO_NAME}/hidro-videos/presion_{fecha}.mp4"
         try:
@@ -51,42 +49,39 @@ def obtener_fechas_disponibles():
 fechas_disponibles = obtener_fechas_disponibles()
 
 if not fechas_disponibles:
-    st.warning("⚠️ No hay videos disponibles en los últimos 30 días.")
+    st.warning("⚠️ No hay videos disponibles.")
     st.stop()
 
-# --- DATE_INPUT ALINEADO HORIZONTALMENTE ---
-st.markdown(
-    """
-    <style>
-    /* Alinear etiqueta y selector en la misma línea */
-    div[data-testid="stDateInput"] label {
-        display: inline-block !important;
-        margin-right: 10px !important;
-        vertical-align: middle !important;
-        font-weight: bold !important;
-    }
-    div[data-testid="stDateInput"] div[data-testid="stDateInputRoot"] {
-        display: inline-block !important;
-        vertical-align: middle !important;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+# --- CONVERTIR FECHAS A FORMATO LEGIBLE ---
+def fecha_a_texto(fecha):
+    dias_semana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+    meses = [
+        "enero", "febrero", "marzo", "abril", "mayo", "junio",
+        "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
+    ]
+    dia_semana = dias_semana[fecha.weekday()]
+    return f"{dia_semana} {fecha.day} de {meses[fecha.month - 1]} de {fecha.year}"
 
-# Usar la fecha más reciente como valor por defecto
-fecha_por_defecto = fechas_disponibles[0]
-fecha_seleccionada = st.date_input(
-    "Selecciona un día para ver la evolución:",
-    value=fecha_por_defecto,
-    min_value=min(fechas_disponibles),
-    max_value=max(fechas_disponibles)
-)
+# Crear opciones para el selectbox
+opciones = {fecha_a_texto(f): f for f in fechas_disponibles}
+nombres_opciones = list(opciones.keys())
 
-# Solo permitir fechas disponibles
-if fecha_seleccionada not in fechas_disponibles:
-    st.info("ℹ️ La fecha seleccionada no tiene video disponible. Se mostrará la más reciente.")
-    fecha_seleccionada = fecha_por_defecto
+# --- ETIQUETA + SELECTBOX EN LA MISMA LÍNEA ---
+col1, col2 = st.columns([2, 3])  # Ajusta proporción si quieres
+
+with col1:
+    st.markdown("**Selecciona un día para ver la evolución:**")
+
+with col2:
+    seleccion_texto = st.selectbox(
+        "Fecha",  # etiqueta invisible (oculta con CSS)
+        options=nombres_opciones,
+        index=0,  # más reciente
+        label_visibility="collapsed"  # ← oculta la etiqueta del selectbox
+    )
+
+# Obtener la fecha real
+fecha_seleccionada = opciones[seleccion_texto]
 
 # --- MOSTRAR VIDEO ---
 video_url = f"https://{GITHUB_USER}.github.io/{REPO_NAME}/hidro-videos/presion_{fecha_seleccionada}.mp4"
@@ -106,7 +101,3 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
-# --- LISTA DE FECHAS DISPONIBLES (opcional, para depuración) ---
-# with st.expander("Fechas con video disponibles"):
-#     st.write([f.isoformat() for f in fechas_disponibles])
