@@ -209,7 +209,7 @@ def mostrar_mapa():
 
 # --- MOSTRAR MAPA ---
     
-st.subheather("💧 Presión en Sectores Hidráulicos")
+st.subheader("💧 Presión en Sectores Hidráulicos")
 mostrar_mapa()
 
 # --- LEYENDA ---
@@ -220,6 +220,7 @@ with col1:
 with col2:
 
     st.markdown("**Opacidad:** Mínimo (20%) = baja presión - Máximo (70%) = alta presión")
+
 
 
 
