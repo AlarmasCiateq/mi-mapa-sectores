@@ -18,7 +18,7 @@ GOOGLE_DRIVE_JSON_URL = "https://drive.google.com/uc?export=download&id=1lhOfMwD
 st.set_page_config(
     page_title="Sectores Hidráulicos",
     page_icon="💧",
-    layout="centered""
+    layout="centered"
 )
 
 # --- MARCA DE AGUA ---
@@ -192,6 +192,7 @@ with col1:
 with col2:
 
     st.markdown("**Opacidad:** Mínimo (20%) = baja presión - Máximo (70%) = alta presión")
+
 
 
 
