@@ -58,7 +58,6 @@ else:
 
 
 if st.session_state.vista_actual == "historico":
-    st.subheader("💧 Evolución de Sectores Hidráulicos")
     # --- AUTOREFRESH CADA 60 SEGUNDOS ---
     st_autorefresh(interval=60000, key="data_reloader")
     
@@ -313,6 +312,7 @@ else:
         """,
         unsafe_allow_html=True
     )
+
 
 
 
