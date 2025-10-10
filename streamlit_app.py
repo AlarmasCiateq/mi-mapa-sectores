@@ -18,17 +18,16 @@ GOOGLE_DRIVE_JSON_URL = "https://drive.google.com/uc?export=download&id=1lhOfMwD
 st.set_page_config(
     page_title="Sectores Hidráulicos",
     page_icon="💧",
-    layout="centered",
-    initial_sidebar_state="expanded"
+    layout="centered""
 )
 
-# --- MARCA FLOTANTE © 2025 CIATEQ® ---
+# --- MARCA DE AGUA ---
 st.markdown(
     """
     <div style="
         position: fixed;
         top: 10px;
-        right: 15px;
+        right: 18px;
         z-index: 999999999;
         color: white;
         font-size: 1.3em;
@@ -36,9 +35,8 @@ st.markdown(
         padding: 5px 10px;
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        font-family: 'Segoe UI', sans-serif;
     ">
-        © 2025 CIATEQ®
+        💧 CIATEQ® 💦 2025 © 
     </div>
     """,
     unsafe_allow_html=True
@@ -183,7 +181,6 @@ def mostrar_mapa():
         unsafe_allow_html=True
     )
 # --- MOSTRAR MAPA ---
-    
 st.subheader("💧 Presión en Sectores Hidráulicos")
 mostrar_mapa()
 
@@ -195,6 +192,7 @@ with col1:
 with col2:
 
     st.markdown("**Opacidad:** Mínimo (20%) = baja presión - Máximo (70%) = alta presión")
+
 
 
 
