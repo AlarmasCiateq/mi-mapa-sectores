@@ -206,7 +206,7 @@ def mostrar_mapa():
     )
 
     # Mostrar mapa
-    st_folium(m, width="100%", height=auto, key="mapa_principal")
+    st_folium(m, width="100%", height="auto", key="mapa_principal")
 
 # --- MOSTRAR MAPA ---
 mostrar_mapa()
@@ -219,6 +219,7 @@ with col1:
 with col2:
 
     st.markdown("**Opacidad:** Mínimo (20%) = baja presión - Máximo (70%) = alta presión")
+
 
 
 
