@@ -22,7 +22,7 @@ st.markdown(
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     ">
-        2025 CIATEQ💦 Derechos Reservados © 
+        💧 CIATEQ® 💦 2025 © 
     </div>
     """,
     unsafe_allow_html=True
@@ -58,6 +58,7 @@ st.markdown(
 )
 
 st.caption("Los videos se generan diariamente a partir de capturas cada 5 minutos.")
+
 
 
 
