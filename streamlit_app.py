@@ -135,7 +135,6 @@ def mostrar_mapa():
 
     # Cargar estado desde Google Drive
     estado_presion_raw = cargar_estado_desde_drive()
-    st.set_page_config(page_title="Presión Hidráulica por Sectores")
     # Configurar mapa
     centro = [24.117124, -110.358397]
     m = folium.Map(location=centro, zoom_start=12, name="main_map")
@@ -209,7 +208,8 @@ def mostrar_mapa():
     st_folium(m, width="100%", height=550, key="mapa_principal")
 
 # --- MOSTRAR MAPA ---
-
+    
+st.subheather("💧 Presión en Sectores Hidráulicos")
 mostrar_mapa()
 
 # --- LEYENDA ---
@@ -220,6 +220,7 @@ with col1:
 with col2:
 
     st.markdown("**Opacidad:** Mínimo (20%) = baja presión - Máximo (70%) = alta presión")
+
 
 
 
