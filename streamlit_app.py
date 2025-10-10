@@ -208,7 +208,6 @@ if st.session_state.vista_actual == "historico":
     
         st.markdown("**Opacidad:** Mínimo (20%) = baja presión - Máximo (70%) = alta presión")
 else:
-    st.subheader("⏱ Mapa Tiempo Real")
     st.set_page_config(
         page_title="Evolución Presión Hidráulica",
         page_icon="💧",
@@ -312,6 +311,7 @@ else:
         """,
         unsafe_allow_html=True
     )
+
 
 
 
