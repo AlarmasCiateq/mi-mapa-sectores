@@ -44,7 +44,7 @@ st.markdown(
 )
 # --- INICIALIZAR ESTADO DE NAVEGACIÓN ---
 if "vista_actual" not in st.session_state:
-    st.session_state.vista_actual = "interactivo"
+    st.session_state.vista_actual = "historico"
 
 # --- BOTONES DE NAVEGACIÓN (en la parte superior) ---
 if st.session_state.vista_actual == "historico":
@@ -311,6 +311,7 @@ else:
         """,
         unsafe_allow_html=True
     )
+
 
 
 
