@@ -2,7 +2,11 @@ import streamlit as st
 from datetime import date, timedelta
 import requests
 
-st.set_page_config(page_title="Evolución Presión Hidráulica")
+st.set_page_config(
+    page_title="Evolución Presión Hidráulica",
+    page_icon="💧",
+    layout="centered"
+    )
 
 # --- MARCA DE AGUA ---
 st.markdown(
@@ -101,6 +105,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 
 
 
