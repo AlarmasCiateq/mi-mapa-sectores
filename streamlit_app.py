@@ -44,31 +44,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --- OCULTAR BOTÓN DEL SIDEBAR ---
-st.html(
-    """
-    <div id="hide-sidebar-toggle"></div>
-    <script>
-        const observer = new MutationObserver(() => {
-            const button = document.querySelector('button[data-testid="stSidebarHeaderToggle"]');
-            if (button) {
-                button.style.display = 'none !important';
-                button.parentElement.style.visibility = 'hidden !important';
-                button.parentElement.style.width = '0px !important';
-                button.parentElement.style.padding = '0px !important';
-                observer.disconnect();
-            }
-        });
-        observer.observe(document.body, { childList: true, subtree: true });
-    </script>
-    <style>
-        button[data-testid="stSidebarHeaderToggle"] { display: none !important; }
-        [data-testid="stSidebarHeader"] { display: none !important; }
-    </style>
-    """
-)
-
-
 # --- AUTOREFRESH CADA 10 SEGUNDOS ---
 st_autorefresh(interval=60000, key="data_reloader")
 
@@ -185,6 +160,10 @@ def mostrar_mapa():
             tooltip=folium.Tooltip(tooltip_html, sticky=True)
         ).add_to(m)
 
+
+    # Mostrar mapa
+    st_folium(m, width="100%", height=550, key="mapa_principal")
+
     # CSS: maximizar tamaño del mapa
     st.markdown(
         """
@@ -203,10 +182,6 @@ def mostrar_mapa():
         """,
         unsafe_allow_html=True
     )
-
-    # Mostrar mapa
-    st_folium(m, width="100%", height=550, key="mapa_principal")
-
 # --- MOSTRAR MAPA ---
     
 st.subheader("💧 Presión en Sectores Hidráulicos")
@@ -220,6 +195,7 @@ with col1:
 with col2:
 
     st.markdown("**Opacidad:** Mínimo (20%) = baja presión - Máximo (70%) = alta presión")
+
 
 
 
