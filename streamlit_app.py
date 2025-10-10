@@ -48,11 +48,11 @@ if "vista_actual" not in st.session_state:
 
 # --- BOTONES DE NAVEGACIÓN (en la parte superior) ---
 if st.session_state.vista_actual == "historico":
-    if st.button("📆Evolución histórica", key="btn_historico"):
+    if st.button("👉🏻Ir a 📆 Evolución histórica", key="btn_historico"):
         st.session_state.vista_actual = "interactivo"
         st.rerun()
 else:
-    if st.button("⏱Mapa Tiempo Real", key="btn_interactivo"):
+    if st.button("👉🏻Ir a ⏱ Mapa Tiempo Real", key="btn_interactivo"):
         st.session_state.vista_actual = "historico"
         st.rerun()
 
@@ -311,6 +311,7 @@ else:
         """,
         unsafe_allow_html=True
     )
+
 
 
 
