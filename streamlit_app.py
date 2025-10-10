@@ -209,6 +209,7 @@ def mostrar_mapa():
     st_folium(m, width="100%", height=550, key="mapa_principal")
 
 # --- MOSTRAR MAPA ---
+st.set_page_config(page_title="Presión Hidráulica por Sectores")
 mostrar_mapa()
 
 # --- LEYENDA ---
@@ -219,6 +220,7 @@ with col1:
 with col2:
 
     st.markdown("**Opacidad:** Mínimo (20%) = baja presión - Máximo (70%) = alta presión")
+
 
 
 
