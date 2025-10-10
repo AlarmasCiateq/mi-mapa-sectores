@@ -13,36 +13,16 @@ st.markdown(
     <div style="
         position: fixed;
         top: 10px;
-        right: 15px;
-        width: 220px;
-        background-color: #111111;
-        padding: 8px 12px;
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        z-index: 9999;  /* Máximo nivel */
-        text-align: center;
+        right: 18px;
+        z-index: 999999999;
         color: white;
-        font-family: 'Segoe UI', sans-serif;
-        pointer-events: none; /* Evita interferencia con clics */
-        transition: all 0.2s ease;
+        font-size: 1.3em;
+        background-color: #111;
+        padding: 5px 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     ">
-        <p style='
-            margin: 0; 
-            color: #782e44; 
-            font-size: 1.1em; 
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        '>
-            CIATEQ 💦
-        </p>
-        <p style='
-            color: #aaa; 
-            font-size: 0.65em; 
-            margin: 0; 
-            line-height: 1.2;
-        '>
-            © 2025 Todos los derechos reservados
-        </p>
+        © 2025 CIATEQ®
     </div>
     """,
     unsafe_allow_html=True
