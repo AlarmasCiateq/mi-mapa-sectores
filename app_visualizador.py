@@ -67,7 +67,7 @@ opciones = {fecha_a_texto(f): f for f in fechas_disponibles}
 nombres_opciones = list(opciones.keys())
 
 # --- ETIQUETA + SELECTBOX EN LA MISMA LÍNEA ---
-col1, col2 = st.columns([2, 3])  # Ajusta proporción si quieres
+col1, col2 = st.columns([2, 2])  # Ajusta proporción si quieres
 
 with col1:
     st.markdown("**Selecciona un día para ver la evolución:**")
@@ -101,4 +101,5 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 
