@@ -25,7 +25,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.subheader("💧 Evolución de Sectores Hidráulicos")
+st.subheader("💧 Evolución de Presión en Sectores Hidráulicos")
 
 GITHUB_USER = "alarmasciateq"
 REPO_NAME = "mi-mapa-sectores"
@@ -101,3 +101,4 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
