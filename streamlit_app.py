@@ -323,12 +323,7 @@ from streamlit_folium import st_folium
 from streamlit_autorefresh import st_autorefresh
 from shapely.geometry import shape
 
-# --- CONFIGURACIÓN ÚNICA (DEBE SER LA PRIMERA) ---
-st.set_page_config(
-    page_title="Sectores Hidráulicos",
-    page_icon="💧",
-    layout="centered"
-)
+
 
 MAX_PRESION = 3.0
 GOOGLE_DRIVE_JSON_URL = "https://drive.google.com/uc?export=download&id=1lhOfMwDaJYsOHGZhoS3kNTNQ8WCZcfPW"
@@ -360,21 +355,25 @@ if "vista_actual" not in st.session_state:
 
 # Mostrar SOLO el botón de la otra vista
 if st.session_state.vista_actual == "interactivo":
-    if st.button("🎬 Ver evolución histórica", key="btn_historico"):
+    if st.button("🎬 Ir a evolución histórica", key="btn_historico"):
         st.session_state.vista_actual = "historico"
         st.rerun()
 else:
-    if st.button("⏱ Volver al mapa en tiempo real", key="btn_interactivo"):
+    if st.button("⏱ Ir al mapa en tiempo real", key="btn_interactivo"):
         st.session_state.vista_actual = "interactivo"
         st.rerun()
-
-st.divider()
 
 # ==============================
 # VISTA 1: MAPA EN TIEMPO REAL
 # ==============================
 if st.session_state.vista_actual == "interactivo":
-    st.subheader("💧 Presión en Sectores Hidráulicos (Tiempo Real)")
+        # --- CONFIGURACIÓN ÚNICA (DEBE SER LA PRIMERA) ---
+    st.set_page_config(
+        page_title="Presión Hidráulicos Tiempo Real",
+        page_icon="💧",
+        layout="centered"
+    )
+    st.subheader("💧 Presión en Sectores Hidráulicos en Tiempo Real")
     
     # Autorefresh cada 60 segundos
     st_autorefresh(interval=60000, key="data_reloader")
@@ -473,6 +472,13 @@ if st.session_state.vista_actual == "interactivo":
 else:
     st.subheader("💧 Evolución de Presión en Sectores Hidráulicos")
 
+        # --- CONFIGURACIÓN ÚNICA (DEBE SER LA PRIMERA) ---
+    st.set_page_config(
+        page_title="Presión Hidráulicos Histórica",
+        page_icon="💧",
+        layout="centered"
+    )
+    st.subheader("💧 Presión en Sectores Hidráulicos (Tiempo Real)")
     GITHUB_USER = "alarmasciateq"
     REPO_NAME = "mi-mapa-sectores"
 
@@ -524,6 +530,7 @@ else:
         """,
         unsafe_allow_html=True
     )
+
 
 
 
