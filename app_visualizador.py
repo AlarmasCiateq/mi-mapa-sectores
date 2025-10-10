@@ -8,7 +8,7 @@ st.title("💧 Evolución de Sectores Hidráulicos")
 
 GITHUB_USER = "alarmasciateq"  # ← tu usuario real
 
-st.sidebar.markdown(
+st.markdown(
     """
     <div style="
         position: fixed;
@@ -78,5 +78,6 @@ st.markdown(
 )
 
 st.caption("Los videos se generan diariamente a partir de capturas cada 5 minutos.")
+
 
 
