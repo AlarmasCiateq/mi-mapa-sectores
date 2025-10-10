@@ -41,6 +41,21 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+# --- INICIALIZAR ESTADO DE NAVEGACIÓN ---
+if "vista_actual" not in st.session_state:
+    st.session_state.vista_actual = "historico"  # o "interactivo"
+
+# --- BOTONES DE NAVEGACIÓN (en la parte superior) ---
+col1, col2, col3 = st.columns([1, 1, 4])
+with col1:
+    if st.button("📊 Histórico"):
+        st.session_state.vista_actual = "historico"
+with col2:
+    if st.button("📍 Interactivo"):
+        st.session_state.vista_actual = "interactivo"
+
+st.divider()
+
 
 # --- AUTOREFRESH CADA 10 SEGUNDOS ---
 st_autorefresh(interval=60000, key="data_reloader")
@@ -192,6 +207,7 @@ with col1:
 with col2:
 
     st.markdown("**Opacidad:** Mínimo (20%) = baja presión - Máximo (70%) = alta presión")
+
 
 
 
