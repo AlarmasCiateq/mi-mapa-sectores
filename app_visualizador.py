@@ -96,10 +96,11 @@ st.markdown(
         </video>
     </div>
     <p style="text-align: center; color: #666; font-size: 0.9em; margin-top: 10px;">
-        Si no ves el video, <a href="{video_url}" target="_blank">haz clic aquí para abrirlo directamente</a>.
+        📥Si no ves el video, <a href="{video_url}" target="_blank">haz clic aquí para bajarlo🔗</a>.
     </p>
     """,
     unsafe_allow_html=True
 )
+
 
 
