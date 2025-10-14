@@ -233,145 +233,18 @@ elif st.session_state.vista_actual == "historico":
 # VISTA 3: ANÁLISIS DE DATOS
 # ==============================
 else:  # vista_actual == "analisis"
-    st.set_page_config(
-        page_title="Análisis de Datos Históricos",
-        page_icon="📊",
-        layout="centered"
-    )
+    st.subheader("📊 Análisis de Datos Históricos")
     
-    # Descargar base de datos desde Google Drive
-    @st.cache_data(ttl=300)  # Cache por 5 minutos
-    def descargar_db():
-        DB_URL = "https://drive.google.com/uc?export=download&id=13B8eDzBJo2yfDw2MpulcTS7F-zb6NwQy"
-        response = requests.get(DB_URL)
-        with open("temp_db.db", "wb") as f:
-            f.write(response.content)
-        return "temp_db.db"
+    st.info("🚧 **En desarrollo** - Próximamente: gráficas interactivas y análisis estadístico de la presión en sectores hidráulicos.")
     
-    def obtener_fechas_disponibles():
-        """Obtiene todas las fechas únicas que existen en la base de datos"""
-        db_path = descargar_db()
-        with sqlite3.connect(db_path) as conn:
-            query = """
-            SELECT DISTINCT 
-                SUBSTR(timestamp, 7, 4) || '-' || SUBSTR(timestamp, 4, 2) || '-' || SUBSTR(timestamp, 1, 2) as fecha_ansi
-            FROM lecturas
-            ORDER BY fecha_ansi DESC
-            """
-            df_fechas = pd.read_sql_query(query, conn)
-            fechas = pd.to_datetime(df_fechas['fecha_ansi']).dt.date.tolist()
-            return fechas
+    # Aquí irá tu código de análisis con SQLite cuando lo implementes
+    st.markdown("""
+    ### Funcionalidades futuras:
+    - 📈 Gráficas de evolución temporal por sector
+    - 📊 Tablas comparativas de presión
+    - 🔍 Filtros por rango de fechas y sectores
+    - 📉 Estadísticas: promedio, máximo, mínimo
+    - 🚨 Alertas de presión crítica
+    """)
     
-    def cargar_datos(fecha_inicio, fecha_fin, dispositivos):
-        """Carga datos de la base de datos filtrados por fecha y dispositivos"""
-        db_path = descargar_db()
-        with sqlite3.connect(db_path) as conn:
-            query = """
-            SELECT dispositivo, valor, timestamp
-            FROM lecturas 
-            WHERE SUBSTR(timestamp, 7, 4) || '-' || SUBSTR(timestamp, 4, 2) || '-' || SUBSTR(timestamp, 1, 2) 
-                  BETWEEN ? AND ?
-            """
-            params = [fecha_inicio.strftime('%Y-%m-%d'), fecha_fin.strftime('%Y-%m-%d')]
-            
-            if dispositivos:
-                placeholders = ','.join(['?' for _ in dispositivos])
-                query += f" AND dispositivo IN ({placeholders})"
-                params.extend(dispositivos)
-                
-            query += " ORDER BY timestamp"
-            df = pd.read_sql_query(query, conn, params=params)
-            return df
-    
-    # Obtener fechas disponibles y dispositivos
-    try:
-        fechas_disponibles = obtener_fechas_disponibles()
-        db_path = descargar_db()
-        with sqlite3.connect(db_path) as conn:
-            dispositivos = pd.read_sql_query("SELECT DISTINCT dispositivo FROM lecturas", conn)['dispositivo'].tolist()
-    except Exception as e:
-        st.error(f"❌ Error al cargar datos iniciales: {e}")
-        st.stop()
-    
-    if not fechas_disponibles:
-        st.warning("⚠️ No hay datos disponibles en la base de datos.")
-        st.stop()
-    
-    # Interfaz de usuario - Selectores de fecha con fechas disponibles
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        fecha_min = max(fechas_disponibles[-1], datetime.now().date() - timedelta(days=30))
-        fecha_max = fechas_disponibles[0]
-        
-        fecha_inicio = st.date_input(
-            "Fecha de inicio",
-            value=fecha_max,
-            min_value=fecha_min,
-            max_value=fecha_max
-        )
-    
-    with col2:
-        fecha_fin = st.date_input(
-            "Fecha de fin",
-            value=fecha_max,
-            min_value=fecha_inicio,
-            max_value=fecha_max
-        )
-    
-    # Validar fechas
-    if fecha_inicio not in fechas_disponibles:
-        fechas_validas_inicio = [f for f in fechas_disponibles if f >= fecha_inicio]
-        fecha_inicio = fechas_validas_inicio[0] if fechas_validas_inicio else fechas_disponibles[0]
-    
-    if fecha_fin not in fechas_disponibles:
-        fechas_validas_fin = [f for f in fechas_disponibles if f <= fecha_fin]
-        fecha_fin = fechas_validas_fin[-1] if fechas_validas_fin else fechas_disponibles[-1]
-    
-    # Selector de dispositivos
-    dispositivos_seleccionados = st.multiselect(
-        "Seleccionar sectores", 
-        dispositivos, 
-        default=dispositivos[:3] if len(dispositivos) >= 3 else dispositivos
-    )
-    
-    # Mostrar botón SOLO si hay sectores seleccionados
-    st.markdown(" ")
-    if dispositivos_seleccionados:
-        st.caption("Oprime el botón para cargar y analizar los datos.")
-        if st.button("🔄 Recargar", type="secondary", ):
-            df = cargar_datos(fecha_inicio, fecha_fin, dispositivos_seleccionados)
-            
-            if df.empty:
-                st.warning("No hay datos para el rango seleccionado.")
-            else:
-                # Convertir timestamp a datetime para Plotly
-                df['fecha_datetime'] = pd.to_datetime(df['timestamp'], format='%d-%m-%Y %H:%M')
-                
-                # Gráfica de líneas con puntos
-                fig = px.line(
-                    df, 
-                    x='fecha_datetime', 
-                    y='valor', 
-                    color='dispositivo',
-                    markers=True,
-                    title="Evolución de la presión en el tiempo",
-                    labels={'valor': 'Presión (kg/cm²)', 'fecha_datetime': 'Fecha y hora'}
-                )
-                st.plotly_chart(fig, use_container_width=True)
-                
-                # Tabla de datos SIN índice
-                st.subheader("Datos detallados")
-                st.dataframe(
-                    df[['dispositivo', 'valor', 'timestamp']].sort_values('timestamp', ascending=False),
-                    use_container_width=True,
-                    hide_index=True
-                )
-                
-                # Estadísticas
-                st.subheader("Estadísticas por sector")
-                stats = df.groupby('dispositivo')['valor'].agg(['min', 'max', 'mean', 'std']).round(2)
-                st.dataframe(stats, use_container_width=True)
-    else:
-        st.info("👆 Selecciona al menos un sector para ver los datos.")
 
