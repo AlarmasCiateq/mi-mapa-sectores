@@ -11,6 +11,7 @@ from shapely.geometry import shape
 import pandas as pd
 import sqlite3
 import altair as alt
+from datetime import datetime
 
 
 MAX_PRESION = 3.0
@@ -334,6 +335,7 @@ else:  # vista_actual == "analisis"
         dispositivos, 
         default=dispositivos[:3] if len(dispositivos) >= 3 else dispositivos
     )
+
 
 
 
