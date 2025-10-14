@@ -234,20 +234,6 @@ elif st.session_state.vista_actual == "historico":
 # VISTA 3: ANÁLISIS DE DATOS
 # ==============================
 else:  # vista_actual == "analisis"
-    st.subheader("📊 Análisis de Datos Históricos")
-    
-    st.info("🚧 **En desarrollo** - Próximamente: gráficas interactivas y análisis estadístico de la presión en sectores hidráulicos.")
-    
-    # Aquí irá tu código de análisis con SQLite cuando lo implementes
-    st.markdown("""
-    ### Funcionalidades futuras:
-    - 📈 Gráficas de evolución temporal por sector
-    - 📊 Tablas comparativas de presión
-    - 🔍 Filtros por rango de fechas y sectores
-    - 📉 Estadísticas: promedio, máximo, mínimo
-    - 🚨 Alertas de presión crítica
-    """)
-    
     st.set_page_config(
         page_title="Análisis Histórico de Presión",
         page_icon="📊",
@@ -297,6 +283,7 @@ else:  # vista_actual == "analisis"
             query += " ORDER BY timestamp"
             df = pd.read_sql_query(query, conn, params=params)
             return df
+
 
 
 
