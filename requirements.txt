@@ -6,5 +6,4 @@ requests
 streamlit-autorefresh
 altair
 pandas
-sqlite3
 
