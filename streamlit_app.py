@@ -248,6 +248,57 @@ else:  # vista_actual == "analisis"
     - 🚨 Alertas de presión crítica
     """)
     
+    st.set_page_config(
+        page_title="Análisis Histórico de Presión",
+        page_icon="📊",
+        layout="centered"
+    )
+    
+    # Descargar base de datos desde Google Drive
+    @st.cache_data(ttl=300)  # Cache por 5 minutos
+    def descargar_db():
+        DB_URL = "https://drive.google.com/uc?export=download&id=13B8eDzBJo2yfDw2MpulcTS7F-zb6NwQy"
+        response = requests.get(DB_URL)
+        with open("temp_db.db", "wb") as f:
+            f.write(response.content)
+        return "temp_db.db"
+    
+    def obtener_fechas_disponibles():
+        """Obtiene todas las fechas únicas que existen en la base de datos"""
+        db_path = descargar_db()
+        with sqlite3.connect(db_path) as conn:
+            query = """
+            SELECT DISTINCT 
+                SUBSTR(timestamp, 7, 4) || '-' || SUBSTR(timestamp, 4, 2) || '-' || SUBSTR(timestamp, 1, 2) as fecha_ansi
+            FROM lecturas
+            ORDER BY fecha_ansi DESC
+            """
+            df_fechas = pd.read_sql_query(query, conn)
+            fechas = pd.to_datetime(df_fechas['fecha_ansi']).dt.date.tolist()
+            return fechas
+    
+    def cargar_datos(fecha_inicio, fecha_fin, dispositivos):
+        """Carga datos de la base de datos filtrados por fecha y dispositivos"""
+        db_path = descargar_db()
+        with sqlite3.connect(db_path) as conn:
+            query = """
+            SELECT dispositivo, valor, timestamp
+            FROM lecturas 
+            WHERE SUBSTR(timestamp, 7, 4) || '-' || SUBSTR(timestamp, 4, 2) || '-' || SUBSTR(timestamp, 1, 2) 
+                  BETWEEN ? AND ?
+            """
+            params = [fecha_inicio.strftime('%Y-%m-%d'), fecha_fin.strftime('%Y-%m-%d')]
+            
+            if dispositivos:
+                placeholders = ','.join(['?' for _ in dispositivos])
+                query += f" AND dispositivo IN ({placeholders})"
+                params.extend(dispositivos)
+                
+            query += " ORDER BY timestamp"
+            df = pd.read_sql_query(query, conn, params=params)
+            return df
+
+
 
 
 
