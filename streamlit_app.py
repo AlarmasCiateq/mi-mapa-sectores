@@ -10,7 +10,7 @@ from streamlit_autorefresh import st_autorefresh
 from shapely.geometry import shape
 import pandas as pd
 import sqlite3
-import plotly.express as px
+import altair as alt
 
 
 MAX_PRESION = 3.0
@@ -236,18 +236,42 @@ elif st.session_state.vista_actual == "historico":
 else:  # vista_actual == "analisis"
     st.subheader("📊 Análisis de Datos Históricos")
     
-    st.info("🚧 **En desarrollo** - Próximamente: gráficas interactivas y análisis estadístico de la presión en sectores hidráulicos.")
+    if st.button("🔄 Recargar"):
+    df = cargar_datos(fecha_inicio, fecha_fin, dispositivos_seleccionados)
     
-    # Aquí irá tu código de análisis con SQLite cuando lo implementes
-    st.markdown("""
-    ### Funcionalidades futuras:
-    - 📈 Gráficas de evolución temporal por sector
-    - 📊 Tablas comparativas de presión
-    - 🔍 Filtros por rango de fechas y sectores
-    - 📉 Estadísticas: promedio, máximo, mínimo
-    - 🚨 Alertas de presión crítica
-    """)
-    
+    if df.empty:
+        st.warning("No hay datos para el rango seleccionado.")
+    else:
+        # Convertir timestamp a datetime para Altair
+        df['fecha_datetime'] = pd.to_datetime(df['timestamp'], format='%d-%m-%Y %H:%M')
+        
+        # Gráfica de líneas con puntos usando Altair
+        chart = alt.Chart(df).mark_line(point=True).encode(
+            x=alt.X('fecha_datetime:T', title='Fecha y hora'),
+            y=alt.Y('valor:Q', title='Presión (kg/cm²)'),
+            color=alt.Color('dispositivo:N', title='Sector'),
+            tooltip=['dispositivo', 'valor', 'timestamp']
+        ).properties(
+            title="Evolución de la presión en el tiempo",
+            width='container',
+            height=400
+        ).interactive()
+        
+        st.altair_chart(chart, use_container_width=True)
+        
+        # Tabla de datos SIN índice
+        st.subheader("Datos detallados")
+        st.dataframe(
+            df[['dispositivo', 'valor', 'timestamp']].sort_values('timestamp', ascending=False),
+            use_container_width=True,
+            hide_index=True
+        )
+        
+        # Estadísticas
+        st.subheader("Estadísticas por sector")
+        stats = df.groupby('dispositivo')['valor'].agg(['min', 'max', 'mean', 'std']).round(2)
+        st.dataframe(stats, use_container_width=True)
+
 
 
 
