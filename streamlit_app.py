@@ -50,29 +50,39 @@ if "vista_actual" not in st.session_state:
     st.session_state.vista_actual = "interactivo"  # Tiempo real por defecto
 
 # Mostrar SOLO el botón correspondiente a la vista actual
+# Mostrar SOLO los botones correspondientes a la vista actual (en un solo renglón)
 if st.session_state.vista_actual == "interactivo":
-    if st.button("🎬 Ir a evolución histórica", key="btn_historico"):
-        st.session_state.vista_actual = "historico"
-        st.rerun()
-    if st.button("📊 Ir a análisis de datos", key="btn_analisis"):
-        st.session_state.vista_actual = "analisis"
-        st.rerun()
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("🎬 Ir a evolución histórica", key="btn_historico"):
+            st.session_state.vista_actual = "historico"
+            st.rerun()
+    with col2:
+        if st.button("📊 Ir a análisis de datos", key="btn_analisis"):
+            st.session_state.vista_actual = "analisis"
+            st.rerun()
         
 elif st.session_state.vista_actual == "historico":
-    if st.button("⏱ Ir al mapa en tiempo real", key="btn_interactivo"):
-        st.session_state.vista_actual = "interactivo"
-        st.rerun()
-    if st.button("📊 Ir a análisis de datos", key="btn_analisis_h"):
-        st.session_state.vista_actual = "analisis"
-        st.rerun()
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("⏱ Ir al mapa en tiempo real", key="btn_interactivo"):
+            st.session_state.vista_actual = "interactivo"
+            st.rerun()
+    with col2:
+        if st.button("📊 Ir a análisis de datos", key="btn_analisis_h"):
+            st.session_state.vista_actual = "analisis"
+            st.rerun()
         
 else:  # vista_actual == "analisis"
-    if st.button("⏱ Ir al mapa en tiempo real", key="btn_interactivo_a"):
-        st.session_state.vista_actual = "interactivo"
-        st.rerun()
-    if st.button("🎬 Ir a evolución histórica", key="btn_historico_a"):
-        st.session_state.vista_actual = "historico"
-        st.rerun()
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("⏱ Ir al mapa en tiempo real", key="btn_interactivo_a"):
+            st.session_state.vista_actual = "interactivo"
+            st.rerun()
+    with col2:
+        if st.button("🎬 Ir a evolución histórica", key="btn_historico_a"):
+            st.session_state.vista_actual = "historico"
+            st.rerun()
 
 st.divider()
 
@@ -371,6 +381,7 @@ else:  # vista_actual == "analisis"
             st.subheader("Estadísticas por sector")
             stats = df.groupby('dispositivo')['valor'].agg(['min', 'max', 'mean', 'std']).round(2)
             st.dataframe(stats, use_container_width=True)
+
 
 
 
