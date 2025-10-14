@@ -10,6 +10,8 @@ from streamlit_autorefresh import st_autorefresh
 from shapely.geometry import shape
 import pandas as pd
 import sqlite3
+import plotly.express as px
+
 
 MAX_PRESION = 3.0
 GOOGLE_DRIVE_JSON_URL = "https://drive.google.com/uc?export=download&id=1lhOfMwDaJYsOHGZhoS3kNTNQ8WCZcfPW"
@@ -246,5 +248,6 @@ else:  # vista_actual == "analisis"
     - 🚨 Alertas de presión crítica
     """)
     
+
 
 
