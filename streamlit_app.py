@@ -283,6 +283,57 @@ else:  # vista_actual == "analisis"
             query += " ORDER BY timestamp"
             df = pd.read_sql_query(query, conn, params=params)
             return df
+    # Obtener fechas disponibles y dispositivos
+    try:
+        fechas_disponibles = obtener_fechas_disponibles()
+        db_path = descargar_db()
+        with sqlite3.connect(db_path) as conn:
+            dispositivos = pd.read_sql_query("SELECT DISTINCT dispositivo FROM lecturas", conn)['dispositivo'].tolist()
+    except Exception as e:
+        st.error(f"❌ Error al cargar datos iniciales: {e}")
+        st.stop()
+    
+    if not fechas_disponibles:
+        st.warning("⚠️ No hay datos disponibles en la base de datos.")
+        st.stop()
+    
+    # Interfaz de usuario - Selectores de fecha con fechas disponibles
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        fecha_min = max(fechas_disponibles[-1], datetime.now().date() - timedelta(days=30))
+        fecha_max = fechas_disponibles[0]
+        
+        fecha_inicio = st.date_input(
+            "Fecha de inicio",
+            value=fecha_max,
+            min_value=fecha_min,
+            max_value=fecha_max
+        )
+    
+    with col2:
+        fecha_fin = st.date_input(
+            "Fecha de fin",
+            value=fecha_max,
+            min_value=fecha_inicio,
+            max_value=fecha_max
+        )
+    
+    # Validar fechas
+    if fecha_inicio not in fechas_disponibles:
+        fechas_validas_inicio = [f for f in fechas_disponibles if f >= fecha_inicio]
+        fecha_inicio = fechas_validas_inicio[0] if fechas_validas_inicio else fechas_disponibles[0]
+    
+    if fecha_fin not in fechas_disponibles:
+        fechas_validas_fin = [f for f in fechas_disponibles if f <= fecha_fin]
+        fecha_fin = fechas_validas_fin[-1] if fechas_validas_fin else fechas_disponibles[-1]
+    
+    # Selector de dispositivos
+    dispositivos_seleccionados = st.multiselect(
+        "Seleccionar sectores", 
+        dispositivos, 
+        default=dispositivos[:3] if len(dispositivos) >= 3 else dispositivos
+    )
 
 
 
