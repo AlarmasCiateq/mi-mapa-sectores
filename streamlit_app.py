@@ -3,7 +3,7 @@ import streamlit as st
 import folium
 import json
 import requests
-from datetime import date, timedelta, now
+from datetime import date, timedelta
 from folium.plugins import Fullscreen
 from streamlit_folium import st_folium
 from streamlit_autorefresh import st_autorefresh
@@ -334,6 +334,7 @@ else:  # vista_actual == "analisis"
         dispositivos, 
         default=dispositivos[:3] if len(dispositivos) >= 3 else dispositivos
     )
+
 
 
 
