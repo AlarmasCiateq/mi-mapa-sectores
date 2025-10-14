@@ -4,4 +4,7 @@ streamlit-folium
 shapely
 requests
 streamlit-autorefresh
+altair
+pandas
+sqlite3
 
