@@ -149,7 +149,7 @@ if st.session_state.vista_actual == "interactivo":
         folium.Marker(
             location=[centro_poligono.y, centro_poligono.x],
             icon=folium.DivIcon(
-                html=f'<div style="font-size:10px;font-weight:bold;color:black;text-align:center">{valor_entrada:.2f}kg/cm³</div>'
+                html=f'<div style="font-size:10px;font-weight:bold;color:black;text-align:center">{valor_entrada:.2f}kg/cm²</div>'
             )
         ).add_to(m)
 
@@ -157,7 +157,7 @@ if st.session_state.vista_actual == "interactivo":
         tooltip_html = f"""
         <b>{nombre}</b>
         <table style="font-size: 11px; font-family: Arial, sans-serif;">
-        <tr><td>Presión: </td><td>{valor_entrada:.2f}kg/cm³</td></tr>
+        <tr><td>Presión: </td><td>{valor_entrada:.2f}kg/cm²</td></tr>
         <tr><td>Hora: </td><td>{timestamp}</td></tr>
         <tr><td>RSSI: </td><td>{rssi}</td></tr>
         </table>
@@ -381,6 +381,7 @@ else:  # vista_actual == "analisis"
             st.subheader("Estadísticas por sector")
             stats = df.groupby('dispositivo')['valor'].agg(['Mín.', 'Máx.', 'Media', 'Desv. Est.']).round(2)
             st.dataframe(stats, use_container_width=True)
+
 
 
 
