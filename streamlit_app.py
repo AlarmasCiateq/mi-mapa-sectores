@@ -379,9 +379,11 @@ else:  # vista_actual == "analisis"
             
             # Estadísticas
             st.subheader("Estadísticas por sector")
-            stats = df.groupby('dispositivo')['valor'].agg(['min', 'max', 'mean', 'std']).round(2)
+            stats = df.groupby('dispositivo')['valor'].agg(Mín=('min'), Máx=('max'), Media=('mean'), Desv_Est=('std')).round(2)
+            # Cambiar nombre si deseas mantener el punto
             stats.rename(columns={'Desv_Est': 'Desv. Est.'}, inplace=True)
             st.dataframe(stats, use_container_width=True)
+
 
 
 
