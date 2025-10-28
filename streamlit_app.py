@@ -199,22 +199,58 @@ if st.session_state.vista_actual == "interactivo":
         return f"#{r:02x}{g:02x}00"
 
     def cargar_estado_desde_bd():
-        """Carga el último valor de presión por dispositivo desde la base de datos."""
-        DB_URL = "https://drive.google.com/uc?export=download&id=13B8eDzBJo2yfDw2MpulcTS7F-zb6NwQy"
-        
-        # Descargar base de datos temporalmente
+        """Carga el último valor de presión por dispositivo desde la base de datos en Google Drive."""
+        FILE_ID = "13B8eDzBJo2yfDw2MpulcTS7F-zb6NwQy"
+        db_path = "temp_db_realtime.db"
+
+        # Función interna para descargar correctamente desde Google Drive
+        def descargar_archivo_google_drive(file_id, destino):
+            session = requests.Session()
+            response = session.get(f"https://drive.google.com/uc?export=download&id={file_id}", stream=True)
+            token = None
+            for key, value in response.cookies.items():
+                if key.startswith('download_warning'):
+                    token = value
+                    break
+            if token:
+                response = session.get(
+                    f"https://drive.google.com/uc?export=download&id={file_id}&confirm={token}",
+                    stream=True
+                )
+            with open(destino, "wb") as f:
+                for chunk in response.iter_content(chunk_size=32768):
+                    if chunk:
+                        f.write(chunk)
+
+        # Descargar la base de datos
         try:
-            response = requests.get(DB_URL, timeout=10)
-            response.raise_for_status()
-            with open("temp_db_realtime.db", "wb") as f:
-                f.write(response.content)
+            descargar_archivo_google_drive(FILE_ID, db_path)
         except Exception as e:
             st.warning(f"No se pudo descargar la base de datos: {e}")
             return {}
 
+        # Verificar que no sea una página HTML (error común de Google Drive)
+        try:
+            with open(db_path, "rb") as f:
+                inicio = f.read(200)
+                if b"<html" in inicio or b"<!DOCTYPE" in inicio:
+                    st.warning("⚠️ El archivo descargado no es una base de datos válida. ¿El enlace de Google Drive es público?")
+                    return {}
+        except Exception as e:
+            st.warning(f"Error al verificar el archivo descargado: {e}")
+            return {}
+
         estado = {}
         try:
-            with sqlite3.connect("temp_db_realtime.db") as conn:
+            with sqlite3.connect(db_path) as conn:
+                # Verificar existencia de la tabla 'lecturas'
+                cursor = conn.cursor()
+                cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='lecturas';")
+                if not cursor.fetchone():
+                    st.warning("❌ La base de datos no contiene la tabla 'lecturas'.")
+                    return {}
+
+                # Obtener la última lectura por dispositivo
                 query = """
                 SELECT dispositivo, valor, timestamp, rssi
                 FROM lecturas
@@ -234,8 +270,8 @@ if st.session_state.vista_actual == "interactivo":
         except Exception as e:
             st.warning(f"Error al consultar la base de datos: {e}")
         finally:
-            if os.path.exists("temp_db_realtime.db"):
-                os.remove("temp_db_realtime.db")
+            if os.path.exists(db_path):
+                os.remove(db_path)
         return estado
 
     # Cargar GeoJSON
@@ -252,7 +288,7 @@ if st.session_state.vista_actual == "interactivo":
             st.error(f"❌ Error al leer GeoJSON: {e}")
             st.stop()
 
-    # Cargar estado desde la base de datos (en lugar del JSON de Google Drive)
+    # Cargar estado desde la base de datos
     estado_presion_raw = cargar_estado_desde_bd()
 
     # Crear mapa
@@ -269,11 +305,11 @@ if st.session_state.vista_actual == "interactivo":
         timestamp = sector_data.get("timestamp", "N/A")
         rssi = sector_data.get("rssi", "N/A")
 
-        # Centroide
+        # Centroide del polígono
         geom = shape(feature["geometry"])
         centro_poligono = geom.centroid
 
-        # Etiqueta de presión en el centro del polígono
+        # Etiqueta de presión en el centro
         folium.Marker(
             location=[centro_poligono.y, centro_poligono.x],
             icon=folium.DivIcon(
@@ -281,7 +317,7 @@ if st.session_state.vista_actual == "interactivo":
             )
         ).add_to(m)
 
-        # Tooltip con información detallada
+        # Tooltip con información
         tooltip_html = f"""
         <b>{nombre}</b>
         <table style="font-size: 11px; font-family: Arial, sans-serif;">
@@ -310,7 +346,6 @@ if st.session_state.vista_actual == "interactivo":
         st.markdown(f"**Color:** 0 ➡ 🟢 -- {MAX_PRESION} ➡ 🔴")
     with col2:
         st.markdown("**Opacidad:** 20% (baja) - 70% (alta)")
-
 # ==============================
 # VISTA 2: EVOLUCIÓN HISTÓRICA
 # ==============================
