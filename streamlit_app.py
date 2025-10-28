@@ -190,7 +190,7 @@ if st.session_state.vista_actual == "interactivo":
     st.subheader("💧 Presión en Sectores Hidráulicos en Tiempo Real")
     
     # Autorefresh cada 60 segundos
-    st_autorefresh(interval=60000, key="data_reloader")
+    st_autorefresh(interval=20000, key="data_reloader")
 
     def interpolar_color(valor):
         pct = max(0.0, min(valor / MAX_PRESION, 1.0))
@@ -586,4 +586,5 @@ else:  # vista_actual == "analisis"
                 width='container',
                 height=400
             ).interactive()
+
 
