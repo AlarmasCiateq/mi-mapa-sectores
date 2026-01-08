@@ -15,9 +15,25 @@ from datetime import datetime
 
 
 MAX_PRESION = 3.0
-GOOGLE_DRIVE_JSON_URL = "https://drive.google.com/uc?export=download&id=1lhOfMwDaJYsOHGZhoS3kNTNQ8WCZcfPW"
 
-# --- CONFIGURACIÓN ÚNICA (DEBE SER LA PRIMERA) ---
+# ==============================
+# URLs GITHUB (REEMPLAZO DRIVE)
+# ==============================
+GITHUB_USER = "AlarmasCiateq"
+REPO_NAME = "mi-mapa-sectores"
+BRANCH = "main"
+
+ESTADO_JSON_URL = (
+    f"https://raw.githubusercontent.com/"
+    f"{GITHUB_USER}/{REPO_NAME}/{BRANCH}/estado_sectores.json"
+)
+
+DB_URL = (
+    f"https://raw.githubusercontent.com/"
+    f"{GITHUB_USER}/{REPO_NAME}/{BRANCH}/hidro_datos.db"
+)
+
+# --- CONFIGURACIÓN ÚNICA ---
 st.set_page_config(
     page_title="Sectores Hidráulicos CIATEQ",
     page_icon="💧",
@@ -45,54 +61,50 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --- BOTÓN DE NAVEGACIÓN CONTEXTUAL (3 VISTAS) ---
+# --- BOTÓN DE NAVEGACIÓN ---
 if "vista_actual" not in st.session_state:
-    st.session_state.vista_actual = "interactivo"  # Tiempo real por defecto
+    st.session_state.vista_actual = "interactivo"
 
-# Mostrar SOLO el botón correspondiente a la vista actual
-# Mostrar SOLO los botones correspondientes a la vista actual (en un solo renglón)
 if st.session_state.vista_actual == "interactivo":
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("🎬 Ir a evolución histórica", key="btn_historico"):
+        if st.button("🎬 Ir a evolución histórica"):
             st.session_state.vista_actual = "historico"
             st.rerun()
     with col2:
-        if st.button("📊 Ir a análisis de datos", key="btn_analisis"):
+        if st.button("📊 Ir a análisis de datos"):
             st.session_state.vista_actual = "analisis"
             st.rerun()
-        
+
 elif st.session_state.vista_actual == "historico":
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("⏱ Ir al mapa en tiempo real", key="btn_interactivo"):
+        if st.button("⏱ Ir al mapa en tiempo real"):
             st.session_state.vista_actual = "interactivo"
             st.rerun()
     with col2:
-        if st.button("📊 Ir a análisis de datos", key="btn_analisis_h"):
+        if st.button("📊 Ir a análisis de datos"):
             st.session_state.vista_actual = "analisis"
             st.rerun()
-        
-else:  # vista_actual == "analisis"
+
+else:
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("⏱ Ir al mapa en tiempo real", key="btn_interactivo_a"):
+        if st.button("⏱ Ir al mapa en tiempo real"):
             st.session_state.vista_actual = "interactivo"
             st.rerun()
     with col2:
-        if st.button("🎬 Ir a evolución histórica", key="btn_historico_a"):
+        if st.button("🎬 Ir a evolución histórica"):
             st.session_state.vista_actual = "historico"
             st.rerun()
 
 st.divider()
 
 # ==============================
-# VISTA 1: MAPA EN TIEMPO REAL
+# VISTA 1: MAPA TIEMPO REAL
 # ==============================
 if st.session_state.vista_actual == "interactivo":
     st.subheader("💧 Presión en Sectores Hidráulicos en Tiempo Real")
-    
-    # Autorefresh cada 60 segundos
     st_autorefresh(interval=60000, key="data_reloader")
 
     def interpolar_color(valor):
@@ -101,492 +113,136 @@ if st.session_state.vista_actual == "interactivo":
         g = int(255 * (1 - pct))
         return f"#{r:02x}{g:02x}00"
 
-    def cargar_estado_desde_drive():
+    def cargar_estado_desde_github():
         try:
-            response = requests.get(GOOGLE_DRIVE_JSON_URL, timeout=10)
-            response.raise_for_status()
-            return response.json()
+            r = requests.get(ESTADO_JSON_URL, timeout=10)
+            r.raise_for_status()
+            return r.json()
         except Exception as e:
             st.warning(f"No se pudo cargar datos: {e}")
             return {}
 
-    # Cargar GeoJSON
     geojson_path = "data/geojson/sector_hidraulico.geojson"
     if not os.path.exists(geojson_path):
         st.error(f"❌ GeoJSON no encontrado: {geojson_path}")
         st.stop()
 
     if "geojson_data" not in st.session_state:
-        try:
-            with open(geojson_path, "r", encoding="utf-8") as f:
-                st.session_state.geojson_data = json.load(f)
-        except Exception as e:
-            st.error(f"❌ Error al leer GeoJSON: {e}")
-            st.stop()
+        with open(geojson_path, "r", encoding="utf-8") as f:
+            st.session_state.geojson_data = json.load(f)
 
-    # Cargar estado
-    estado_presion_raw = cargar_estado_desde_drive()
+    estado_presion_raw = cargar_estado_desde_github()
 
-    # Crear mapa
     centro = [24.117124, -110.358397]
     m = folium.Map(location=centro, zoom_start=12)
     m.add_child(Fullscreen(position='topleft'))
 
     for feature in st.session_state.geojson_data["features"]:
         nombre = feature["properties"].get("name", "Sin nombre")
-        sector_data = estado_presion_raw.get(nombre, {})
-        valor_entrada = sector_data.get("valor", 0.0)
-        fill_color = interpolar_color(valor_entrada)
-        fill_opacity = 0.2 + 0.5 * (valor_entrada / MAX_PRESION)
-        timestamp = sector_data.get("timestamp", "N/A")
-        rssi = sector_data.get("rssi", "N/A")
+        data = estado_presion_raw.get(nombre, {})
+        valor = data.get("valor", 0.0)
+        timestamp = data.get("timestamp", "N/A")
+        rssi = data.get("rssi", "N/A")
 
-        # Centroide
         geom = shape(feature["geometry"])
-        centro_poligono = geom.centroid
+        c = geom.centroid
 
-        # Etiqueta de presión
         folium.Marker(
-            location=[centro_poligono.y, centro_poligono.x],
+            [c.y, c.x],
             icon=folium.DivIcon(
-                html=f'<div style="font-size:10px;font-weight:bold;color:black;text-align:center">{valor_entrada:.2f}kg/cm²</div>'
+                html=f'<div style="font-size:10px;font-weight:bold">{valor:.2f} kg/cm²</div>'
             )
         ).add_to(m)
 
-        # Tooltip
-        tooltip_html = f"""
-        <b>{nombre}</b>
-        <table style="font-size: 11px; font-family: Arial, sans-serif;">
-        <tr><td>Presión: </td><td>{valor_entrada:.2f}kg/cm²</td></tr>
-        <tr><td>Hora: </td><td>{timestamp}</td></tr>
-        <tr><td>RSSI: </td><td>{rssi}</td></tr>
-        </table>
-        """
         folium.GeoJson(
             feature,
-            style_function=lambda x, fc=fill_color, fo=fill_opacity: {
+            style_function=lambda x, fc=interpolar_color(valor): {
                 "fillColor": fc,
                 "color": "#000",
                 "weight": 1.5,
-                "fillOpacity": fo
+                "fillOpacity": 0.2 + 0.5 * (valor / MAX_PRESION)
             },
-            tooltip=folium.Tooltip(tooltip_html, sticky=True)
+            tooltip=folium.Tooltip(
+                f"<b>{nombre}</b><br>"
+                f"Presión: {valor:.2f}<br>"
+                f"Hora: {timestamp}<br>"
+                f"RSSI: {rssi}",
+                sticky=True
+            )
         ).add_to(m)
 
-    # Mostrar mapa con altura fija
     st_folium(m, width="100%", height=550)
 
-    # Leyenda
-    col1, col2 = st.columns([1, 2])
-    with col1:
-        st.markdown(f"**Color:** 0 ➡ 🟢 -- {MAX_PRESION} ➡ 🔴")
-    with col2:
-        st.markdown("**Opacidad:** 20% (baja) - 70% (alta)")
-
 # ==============================
-# VISTA 1: MAPA EN TIEMPO REAL
-# ==============================
-# if st.session_state.vista_actual == "interactivo":
-#     st.subheader("💧 Presión en Sectores Hidráulicos en Tiempo Real")
-    
-#     # Autorefresh cada 60 segundos
-#     st_autorefresh(interval=30000, key="data_reloader")
-
-#     def interpolar_color(valor):
-#         pct = max(0.0, min(valor / MAX_PRESION, 1.0))
-#         r = int(255 * pct)
-#         g = int(255 * (1 - pct))
-#         return f"#{r:02x}{g:02x}00"
-
-#     def cargar_estado_desde_bd():
-#         """Carga el último valor de presión por dispositivo desde la base de datos en Google Drive."""
-#         FILE_ID = "13B8eDzBJo2yfDw2MpulcTS7F-zb6NwQy"
-#         db_path = "temp_db_realtime.db"
-
-#         # Función interna para descargar correctamente desde Google Drive
-#         def descargar_archivo_google_drive(file_id, destino):
-#             session = requests.Session()
-#             response = session.get(f"https://drive.google.com/uc?export=download&id={file_id}", stream=True)
-#             token = None
-#             for key, value in response.cookies.items():
-#                 if key.startswith('download_warning'):
-#                     token = value
-#                     break
-#             if token:
-#                 response = session.get(
-#                     f"https://drive.google.com/uc?export=download&id={file_id}&confirm={token}",
-#                     stream=True
-#                 )
-#             with open(destino, "wb") as f:
-#                 for chunk in response.iter_content(chunk_size=32768):
-#                     if chunk:
-#                         f.write(chunk)
-
-#         # Descargar la base de datos
-#         try:
-#             descargar_archivo_google_drive(FILE_ID, db_path)
-#         except Exception as e:
-#             st.warning(f"No se pudo descargar la base de datos: {e}")
-#             return {}
-
-#         # Verificar que no sea una página HTML (error común de Google Drive)
-#         try:
-#             with open(db_path, "rb") as f:
-#                 inicio = f.read(200)
-#                 if b"<html" in inicio or b"<!DOCTYPE" in inicio:
-#                     st.warning("⚠️ El archivo descargado no es una base de datos válida. ¿El enlace de Google Drive es público?")
-#                     return {}
-#         except Exception as e:
-#             st.warning(f"Error al verificar el archivo descargado: {e}")
-#             return {}
-
-#         estado = {}
-#         try:
-#             with sqlite3.connect(db_path) as conn:
-#                 # Verificar existencia de la tabla 'lecturas'
-#                 cursor = conn.cursor()
-#                 cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='lecturas';")
-#                 if not cursor.fetchone():
-#                     st.warning("❌ La base de datos no contiene la tabla 'lecturas'.")
-#                     return {}
-
-#                 # Obtener la última lectura por dispositivo
-#                 query = """
-#                 SELECT dispositivo, valor, timestamp, rssi
-#                 FROM lecturas
-#                 WHERE (dispositivo, timestamp) IN (
-#                     SELECT dispositivo, MAX(timestamp)
-#                     FROM lecturas
-#                     GROUP BY dispositivo
-#                 )
-#                 """
-#                 df = pd.read_sql_query(query, conn)
-#                 for _, row in df.iterrows():
-#                     estado[row["dispositivo"]] = {
-#                         "valor": float(row["valor"]),
-#                         "timestamp": row["timestamp"],
-#                         "rssi": str(row.get("rssi", "N/A"))
-#                     }
-#         except Exception as e:
-#             st.warning(f"Error al consultar la base de datos: {e}")
-#         finally:
-#             if os.path.exists(db_path):
-#                 os.remove(db_path)
-#         return estado
-
-#     # Cargar GeoJSON
-#     geojson_path = "data/geojson/sector_hidraulico.geojson"
-#     if not os.path.exists(geojson_path):
-#         st.error(f"❌ GeoJSON no encontrado: {geojson_path}")
-#         st.stop()
-
-#     if "geojson_data" not in st.session_state:
-#         try:
-#             with open(geojson_path, "r", encoding="utf-8") as f:
-#                 st.session_state.geojson_data = json.load(f)
-#         except Exception as e:
-#             st.error(f"❌ Error al leer GeoJSON: {e}")
-#             st.stop()
-
-#     # Cargar estado desde la base de datos
-#     estado_presion_raw = cargar_estado_desde_bd()
-
-#     # Crear mapa
-#     centro = [24.117124, -110.358397]
-#     m = folium.Map(location=centro, zoom_start=12)
-#     m.add_child(Fullscreen(position='topleft'))
-
-#     for feature in st.session_state.geojson_data["features"]:
-#         nombre = feature["properties"].get("name", "Sin nombre")
-#         sector_data = estado_presion_raw.get(nombre, {})
-#         valor_entrada = sector_data.get("valor", 0.0)
-#         fill_color = interpolar_color(valor_entrada)
-#         fill_opacity = 0.2 + 0.5 * (valor_entrada / MAX_PRESION)
-#         timestamp = sector_data.get("timestamp", "N/A")
-#         rssi = sector_data.get("rssi", "N/A")
-
-#         # Centroide del polígono
-#         geom = shape(feature["geometry"])
-#         centro_poligono = geom.centroid
-
-#         # Etiqueta de presión en el centro
-#         folium.Marker(
-#             location=[centro_poligono.y, centro_poligono.x],
-#             icon=folium.DivIcon(
-#                 html=f'<div style="font-size:10px;font-weight:bold;color:black;text-align:center">{valor_entrada:.2f}kg/cm²</div>'
-#             )
-#         ).add_to(m)
-
-#         # Tooltip con información
-#         tooltip_html = f"""
-#         <b>{nombre}</b>
-#         <table style="font-size: 11px; font-family: Arial, sans-serif;">
-#         <tr><td>Presión: </td><td>{valor_entrada:.2f}kg/cm²</td></tr>
-#         <tr><td>Hora: </td><td>{timestamp}</td></tr>
-#         <tr><td>RSSI: </td><td>{rssi}</td></tr>
-#         </table>
-#         """
-#         folium.GeoJson(
-#             feature,
-#             style_function=lambda x, fc=fill_color, fo=fill_opacity: {
-#                 "fillColor": fc,
-#                 "color": "#000",
-#                 "weight": 1.5,
-#                 "fillOpacity": fo
-#             },
-#             tooltip=folium.Tooltip(tooltip_html, sticky=True)
-#         ).add_to(m)
-
-#     # Mostrar mapa
-#     st_folium(m, width="100%", height=550)
-
-#     # Leyenda
-#     col1, col2 = st.columns([1, 2])
-#     with col1:
-#         st.markdown(f"**Color:** 0 ➡ 🟢 -- {MAX_PRESION} ➡ 🔴")
-#     with col2:
-#         st.markdown("**Opacidad:** 20% (baja) - 70% (alta)")
-# ==============================
-# VISTA 2: EVOLUCIÓN HISTÓRICA
+# VISTA 2: HISTÓRICO (VIDEOS)
 # ==============================
 elif st.session_state.vista_actual == "historico":
-    st.subheader("💧 Evolución de Presión en Sectores Hidráulicos")
-
-    GITHUB_USER = "alarmasciateq"
-    REPO_NAME = "mi-mapa-sectores"
+    st.subheader("💧 Evolución de Presión en Sectores")
 
     @st.cache_data(ttl=3600)
     def obtener_fechas_disponibles():
         fechas = []
         hoy = date.today()
         for i in range(60):
-            fecha = hoy - timedelta(days=i)
-            url = f"https://{GITHUB_USER}.github.io/{REPO_NAME}/hidro-videos/presion_{fecha}.mp4"
+            f = hoy - timedelta(days=i)
+            url = f"https://{GITHUB_USER}.github.io/{REPO_NAME}/hidro-videos/presion_{f}.mp4"
             try:
-                respuesta = requests.head(url, timeout=3)
-                if respuesta.status_code == 200:
-                    fechas.append(fecha)
+                if requests.head(url, timeout=3).status_code == 200:
+                    fechas.append(f)
             except:
-                continue
-        return sorted(fechas, reverse=True)
+                pass
+        return fechas
 
-    fechas_disponibles = obtener_fechas_disponibles()
-    if not fechas_disponibles:
-        st.warning("⚠️ No hay videos disponibles.")
+    fechas = obtener_fechas_disponibles()
+    if not fechas:
+        st.warning("⚠️ No hay videos disponibles")
         st.stop()
 
-    def fecha_a_texto(fecha):
-        dias = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
-        meses = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
-        return f"{dias[fecha.weekday()]} {fecha.day} {meses[fecha.month-1]} {fecha.year}"
-
-    opciones = {fecha_a_texto(f): f for f in fechas_disponibles}
-    seleccion = st.selectbox(
-        "Selecciona un día:",
-        options=list(opciones.keys()),
-        index=0,
-        label_visibility="collapsed"
-    )
-    fecha_sel = opciones[seleccion]
+    fecha_sel = st.selectbox("Día", fechas)
     video_url = f"https://{GITHUB_USER}.github.io/{REPO_NAME}/hidro-videos/presion_{fecha_sel}.mp4"
 
-    st.markdown(
-        f"""
-        <div style="display: flex; justify-content: center; width: 100%; margin-top: 20px;">
-            <video src="{video_url}" controls 
-                   style="max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 8px;">
-            </video>
-        </div>
-        <p style="text-align: center; color: #666; font-size: 0.9em; margin-top: 10px;">
-            📥 Si no ves el video, <a href="{video_url}" target="_blank">haz clic aquí para bajarlo🔗</a>.
-        </p>
-        """,
-        unsafe_allow_html=True
-    )
-
+    st.video(video_url)
 
 # ==============================
 # VISTA 3: ANÁLISIS DE DATOS
 # ==============================
-else:  # vista_actual == "analisis"
-    st.subheader("📊 Análisis Histórico de Presión en Sectores")
+else:
+    st.subheader("📊 Análisis Histórico de Presión")
 
-    # URL de la base de datos en Google Drive
-    DB_URL = "https://drive.google.com/uc?export=download&id=13B8eDzBJo2yfDw2MpulcTS7F-zb6NwQy"
-
-    @st.cache_data(ttl=300)  # Cache por 5 minutos
+    @st.cache_data(ttl=300)
     def descargar_db():
-        """Descarga la base de datos desde Google Drive"""
         try:
-            response = requests.get(DB_URL, timeout=10)
-            response.raise_for_status()
+            r = requests.get(DB_URL, timeout=15)
+            r.raise_for_status()
             with open("temp_db.db", "wb") as f:
-                f.write(response.content)
+                f.write(r.content)
             return "temp_db.db"
         except Exception as e:
-            st.error(f"❌ Error al descargar la base de datos: {e}")
+            st.error(f"❌ Error al descargar BD: {e}")
             return None
 
-    def obtener_fechas_disponibles():
-        """Obtiene todas las fechas únicas disponibles en la base de datos"""
-        db_path = descargar_db()
-        if not db_path:
-            return []
-        try:
-            with sqlite3.connect(db_path) as conn:
-                query = """
-                SELECT DISTINCT 
-                    SUBSTR(timestamp, 7, 4) || '-' || SUBSTR(timestamp, 4, 2) || '-' || SUBSTR(timestamp, 1, 2) as fecha_ansi
-                FROM lecturas
-                ORDER BY fecha_ansi DESC
-                """
-                df_fechas = pd.read_sql_query(query, conn)
-                fechas = pd.to_datetime(df_fechas['fecha_ansi']).dt.date.tolist()
-                return fechas
-        except Exception as e:
-            st.error(f"❌ Error al consultar fechas: {e}")
-            return []
-
-    def cargar_datos(fecha_inicio, fecha_fin, dispositivos):
-        """Carga datos filtrados por rango de fechas y dispositivos"""
-        db_path = descargar_db()
-        if not db_path:
-            return pd.DataFrame()
-        try:
-            with sqlite3.connect(db_path) as conn:
-                query = """
-                SELECT dispositivo, valor, timestamp
-                FROM lecturas 
-                WHERE SUBSTR(timestamp, 7, 4) || '-' || SUBSTR(timestamp, 4, 2) || '-' || SUBSTR(timestamp, 1, 2) 
-                      BETWEEN ? AND ?
-                """
-                params = [fecha_inicio.strftime('%Y-%m-%d'), fecha_fin.strftime('%Y-%m-%d')]
-                
-                if dispositivos:
-                    placeholders = ','.join(['?' for _ in dispositivos])
-                    query += f" AND dispositivo IN ({placeholders})"
-                    params.extend(dispositivos)
-                    
-                query += " ORDER BY timestamp"
-                df = pd.read_sql_query(query, conn, params=params)
-                return df
-        except Exception as e:
-            st.error(f"❌ Error al cargar datos: {e}")
-            return pd.DataFrame()
-
-    # === CARGA INICIAL DE METADATOS ===
-    try:
-        fechas_disponibles = obtener_fechas_disponibles()
-        if not fechas_disponibles:
-            st.warning("⚠️ No hay datos disponibles en la base de datos.")
-            st.stop()
-
-        # Obtener dispositivos
-        db_path = descargar_db()
-        with sqlite3.connect(db_path) as conn:
-            dispositivos = pd.read_sql_query("SELECT DISTINCT dispositivo FROM lecturas", conn)['dispositivo'].tolist()
-
-    except Exception as e:
-        st.error(f"❌ Error crítico al cargar metadatos: {e}")
+    db_path = descargar_db()
+    if not db_path:
         st.stop()
 
-    # === INTERFAZ DE FILTROS ===
-    col1, col2 = st.columns(2)
+    with sqlite3.connect(db_path) as conn:
+        dispositivos = pd.read_sql("SELECT DISTINCT dispositivo FROM lecturas", conn)['dispositivo'].tolist()
 
-    with col1:
-        fecha_min = max(fechas_disponibles[-1], datetime.now().date() - timedelta(days=30))
-        fecha_max = fechas_disponibles[0]
-        
-        fecha_inicio = st.date_input(
-            "Fecha de inicio",
-            value=fechas_disponibles[0],
-            min_value=fecha_min,
-            max_value=fecha_max
-        )
+    dispositivos_sel = st.multiselect("Sectores", dispositivos, default=dispositivos[:3])
 
-    with col2:
-        fecha_fin = st.date_input(
-            "Fecha de fin",
-            value=fechas_disponibles[0],
-            min_value=fecha_inicio,
-            max_value=fecha_max
-        )
-
-    # Asegurar que las fechas seleccionadas estén en los datos disponibles
-    if fecha_inicio not in fechas_disponibles:
-        fecha_inicio = min(fechas_disponibles, key=lambda x: abs((x - fecha_inicio)))
-    if fecha_fin not in fechas_disponibles:
-        fecha_fin = min(fechas_disponibles, key=lambda x: abs((x - fecha_fin)))
-
-    dispositivos_seleccionados = st.multiselect(
-        "Seleccionar sectores",
-        dispositivos,
-        default=dispositivos[:3] if len(dispositivos) >= 3 else dispositivos
-    )
-
-    if st.button("🔄 Recargar datos"):
-        df = cargar_datos(fecha_inicio, fecha_fin, dispositivos_seleccionados)
-
-        if df.empty:
-            st.warning("No hay datos para el rango y sectores seleccionados.")
-        else:
-            # Convertir timestamp a datetime
-            df['fecha_datetime'] = pd.to_datetime(df['timestamp'], format='%d-%m-%Y %H:%M')
-
-            # === GRÁFICA CON BANDA DE CONFIANZA ===
-            chart_base = alt.Chart(df).encode(
-                x=alt.X('fecha_datetime:T', title='Fecha y hora'),
-                y=alt.Y('valor:Q', title='Presión (kg/cm²)', scale=alt.Scale(zero=False)),
-                color=alt.Color('dispositivo:N', title='Sector')
+    if st.button("🔄 Cargar datos"):
+        with sqlite3.connect(db_path) as conn:
+            df = pd.read_sql(
+                "SELECT dispositivo, valor, timestamp FROM lecturas",
+                conn
             )
 
-            # Línea principal (media móvil si hay muchos puntos, o línea directa)
-            linea = chart_base.mark_line(point=True, strokeWidth=2).encode(
-                tooltip=['dispositivo', 'valor', 'timestamp']
-            )
+        df['fecha'] = pd.to_datetime(df['timestamp'], format='%d-%m-%Y %H:%M')
 
-            # Banda de confianza (±1 desviación estándar alrededor de la media móvil)
-            banda = chart_base.mark_errorband(extent='stdev').encode(
-                y=alt.Y('valor:Q', title='Presión (kg/cm²)')
-            )
+        chart = alt.Chart(df[df['dispositivo'].isin(dispositivos_sel)]).mark_line().encode(
+            x='fecha:T',
+            y='valor:Q',
+            color='dispositivo:N'
+        ).interactive()
 
-            chart = (banda + linea).properties(
-                title="Evolución de la presión con banda de confianza (±1σ)",
-                width='container',
-                height=400
-            ).interactive()
-
-            st.altair_chart(chart, use_container_width=True)
-
-            # === TABLA DETALLADA ===
-            st.subheader("📋 Datos detallados")
-            st.dataframe(
-                df[['dispositivo', 'valor', 'timestamp']].sort_values('timestamp', ascending=False),
-                use_container_width=True,
-                hide_index=True
-            )
-
-            # === ESTADÍSTICAS POR SECTOR ===
-            st.subheader("📈 Estadísticas por sector")
-            stats = df.groupby('dispositivo')['valor'].agg(
-                Mín=('min'),
-                Máx=('max'),
-                Media=('mean'),
-                Desv_Est=('std')
-            ).round(2)
-            stats.rename(columns={'Desv_Est': 'Desv. Est.'}, inplace=True)
-            st.dataframe(stats, use_container_width=True)
-            
-            # Banda de confianza (±1 desviación estándar alrededor de la media)
-            banda = chart_base.mark_errorband(extent='stdev').encode(
-                y=alt.Y('valor:Q', title='Presión (kg/cm²)')
-            )
-            chart = (banda + linea).properties(
-                title="Evolución de la presión con banda de confianza (±1σ)",
-                width='container',
-                height=400
-            ).interactive()
-
-
-
-
+        st.altair_chart(chart, use_container_width=True)
