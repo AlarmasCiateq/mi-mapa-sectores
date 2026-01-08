@@ -33,9 +33,7 @@ DB_URL = (
     f"{GITHUB_USER}/{REPO_NAME}/{BRANCH}/data/hidro_datos.db"
 )
 
-# ==============================
-# CONFIGURACIÓN STREAMLIT
-# ==============================
+# --- CONFIGURACIÓN ÚNICA ---
 st.set_page_config(
     page_title="Sectores Hidráulicos CIATEQ",
     page_icon="💧",
@@ -63,49 +61,47 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ==============================
-# NAVEGACIÓN ENTRE VISTAS
-# ==============================
+# --- BOTÓN DE NAVEGACIÓN ---
 if "vista_actual" not in st.session_state:
     st.session_state.vista_actual = "interactivo"
 
 if st.session_state.vista_actual == "interactivo":
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("🎬 Ir a evolución histórica"):
+        if st.button("🎬 Ir a evolución histórica", key="btn_historico"):
             st.session_state.vista_actual = "historico"
             st.rerun()
     with col2:
-        if st.button("📊 Ir a análisis de datos"):
+        if st.button("📊 Ir a análisis de datos", key="btn_analisis"):
             st.session_state.vista_actual = "analisis"
             st.rerun()
 
 elif st.session_state.vista_actual == "historico":
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("⏱ Ir al mapa en tiempo real"):
+        if st.button("⏱ Ir al mapa en tiempo real", key="btn_interactivo"):
             st.session_state.vista_actual = "interactivo"
             st.rerun()
     with col2:
-        if st.button("📊 Ir a análisis de datos"):
+        if st.button("📊 Ir a análisis de datos", key="btn_analisis_h"):
             st.session_state.vista_actual = "analisis"
             st.rerun()
 
 else:
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("⏱ Ir al mapa en tiempo real"):
+        if st.button("⏱ Ir al mapa en tiempo real", key="btn_interactivo_a"):
             st.session_state.vista_actual = "interactivo"
             st.rerun()
     with col2:
-        if st.button("🎬 Ir a evolución histórica"):
+        if st.button("🎬 Ir a evolución histórica", key="btn_historico_a"):
             st.session_state.vista_actual = "historico"
             st.rerun()
 
 st.divider()
 
 # ==============================
-# VISTA 1: MAPA TIEMPO REAL
+# VISTA 1: MAPA EN TIEMPO REAL
 # ==============================
 if st.session_state.vista_actual == "interactivo":
     st.subheader("💧 Presión en Sectores Hidráulicos en Tiempo Real")
@@ -119,9 +115,9 @@ if st.session_state.vista_actual == "interactivo":
 
     def cargar_estado_desde_github():
         try:
-            r = requests.get(ESTADO_JSON_URL, timeout=10)
-            r.raise_for_status()
-            return r.json()
+            response = requests.get(ESTADO_JSON_URL, timeout=10)
+            response.raise_for_status()
+            return response.json()
         except Exception as e:
             st.warning(f"No se pudo cargar datos: {e}")
             return {}
@@ -135,7 +131,7 @@ if st.session_state.vista_actual == "interactivo":
         with open(geojson_path, "r", encoding="utf-8") as f:
             st.session_state.geojson_data = json.load(f)
 
-    estado_presion = cargar_estado_desde_github()
+    estado_presion_raw = cargar_estado_desde_github()
 
     centro = [24.117124, -110.358397]
     m = folium.Map(location=centro, zoom_start=12)
@@ -143,118 +139,58 @@ if st.session_state.vista_actual == "interactivo":
 
     for feature in st.session_state.geojson_data["features"]:
         nombre = feature["properties"].get("name", "Sin nombre")
-        data = estado_presion.get(nombre, {})
-        valor = data.get("valor", 0.0)
-        timestamp = data.get("timestamp", "N/A")
-        rssi = data.get("rssi", "N/A")
+        sector_data = estado_presion_raw.get(nombre, {})
+        valor_entrada = sector_data.get("valor", 0.0)
+        fill_color = interpolar_color(valor_entrada)
+        fill_opacity = 0.2 + 0.5 * (valor_entrada / MAX_PRESION)
+        timestamp = sector_data.get("timestamp", "N/A")
+        rssi = sector_data.get("rssi", "N/A")
 
         geom = shape(feature["geometry"])
-        c = geom.centroid
+        centro_poligono = geom.centroid
 
         folium.Marker(
-            [c.y, c.x],
+            location=[centro_poligono.y, centro_poligono.x],
             icon=folium.DivIcon(
-                html=f'<div style="font-size:10px;font-weight:bold">{valor:.2f} kg/cm²</div>'
+                html=f'''
+                <div style="
+                    font-size:10px;
+                    font-weight:bold;
+                    color:black;
+                    text-align:center;
+                ">
+                    {valor_entrada:.2f}kg/cm²
+                </div>
+                '''
             )
         ).add_to(m)
 
+        tooltip_html = f"""
+        <b>{nombre}</b>
+        <table style="font-size: 11px; font-family: Arial, sans-serif;">
+        <tr><td>Presión: </td><td>{valor_entrada:.2f}kg/cm²</td></tr>
+        <tr><td>Hora: </td><td>{timestamp}</td></tr>
+        <tr><td>RSSI: </td><td>{rssi}</td></tr>
+        </table>
+        """
+
         folium.GeoJson(
             feature,
-            style_function=lambda x, fc=interpolar_color(valor): {
+            style_function=lambda x, fc=fill_color, fo=fill_opacity: {
                 "fillColor": fc,
                 "color": "#000",
                 "weight": 1.5,
-                "fillOpacity": 0.2 + 0.5 * (valor / MAX_PRESION)
+                "fillOpacity": fo
             },
-            tooltip=folium.Tooltip(
-                f"<b>{nombre}</b><br>"
-                f"Presión: {valor:.2f}<br>"
-                f"Hora: {timestamp}<br>"
-                f"RSSI: {rssi}",
-                sticky=True
-            )
+            tooltip=folium.Tooltip(tooltip_html, sticky=True)
         ).add_to(m)
 
     st_folium(m, width="100%", height=550)
 
-# ==============================
-# VISTA 2: HISTÓRICO (VIDEOS)
-# ==============================
-elif st.session_state.vista_actual == "historico":
-    st.subheader("💧 Evolución de Presión en Sectores")
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        st.markdown(f"**Color:** 0 ➡ 🟢 -- {MAX_PRESION} ➡ 🔴")
+    with col2:
+        st.markdown("**Opacidad:** 20% (baja) - 70% (alta)")
 
-    @st.cache_data(ttl=3600)
-    def obtener_fechas_disponibles():
-        fechas = []
-        hoy = date.today()
-        for i in range(60):
-            f = hoy - timedelta(days=i)
-            url = f"https://{GITHUB_USER}.github.io/{REPO_NAME}/hidro-videos/presion_{f}.mp4"
-            try:
-                if requests.head(url, timeout=3).status_code == 200:
-                    fechas.append(f)
-            except:
-                pass
-        return fechas
-
-    fechas = obtener_fechas_disponibles()
-    if not fechas:
-        st.warning("⚠️ No hay videos disponibles")
-        st.stop()
-
-    fecha_sel = st.selectbox("Selecciona un día", fechas)
-    video_url = f"https://{GITHUB_USER}.github.io/{REPO_NAME}/hidro-videos/presion_{fecha_sel}.mp4"
-    st.video(video_url)
-
-# ==============================
-# VISTA 3: ANÁLISIS DE DATOS
-# ==============================
-else:
-    st.subheader("📊 Análisis Histórico de Presión")
-
-    @st.cache_data(ttl=300)
-    def descargar_db():
-        try:
-            r = requests.get(DB_URL, timeout=15)
-            r.raise_for_status()
-            with open("temp_db.db", "wb") as f:
-                f.write(r.content)
-            return "temp_db.db"
-        except Exception as e:
-            st.error(f"❌ Error al descargar BD: {e}")
-            return None
-
-    db_path = descargar_db()
-    if not db_path:
-        st.stop()
-
-    with sqlite3.connect(db_path) as conn:
-        dispositivos = pd.read_sql(
-            "SELECT DISTINCT dispositivo FROM lecturas", conn
-        )['dispositivo'].tolist()
-
-    dispositivos_sel = st.multiselect(
-        "Seleccionar sectores",
-        dispositivos,
-        default=dispositivos[:3] if len(dispositivos) >= 3 else dispositivos
-    )
-
-    if st.button("🔄 Cargar datos"):
-        with sqlite3.connect(db_path) as conn:
-            df = pd.read_sql(
-                "SELECT dispositivo, valor, timestamp FROM lecturas",
-                conn
-            )
-
-        df['fecha'] = pd.to_datetime(df['timestamp'], format='%d-%m-%Y %H:%M')
-
-        chart = alt.Chart(
-            df[df['dispositivo'].isin(dispositivos_sel)]
-        ).mark_line(point=True).encode(
-            x='fecha:T',
-            y='valor:Q',
-            color='dispositivo:N',
-            tooltip=['dispositivo', 'valor', 'timestamp']
-        ).interactive()
-
-        st.altair_chart(chart, use_container_width=True)
+# ======
