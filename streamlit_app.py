@@ -17,7 +17,7 @@ from datetime import datetime
 MAX_PRESION = 3.0
 
 # ==============================
-# URLs GITHUB (REEMPLAZO DRIVE)
+# CONFIGURACIÓN GITHUB
 # ==============================
 GITHUB_USER = "AlarmasCiateq"
 REPO_NAME = "mi-mapa-sectores"
@@ -25,15 +25,17 @@ BRANCH = "main"
 
 ESTADO_JSON_URL = (
     f"https://raw.githubusercontent.com/"
-    f"{GITHUB_USER}/{REPO_NAME}/{BRANCH}/estado_sectores.json"
+    f"{GITHUB_USER}/{REPO_NAME}/{BRANCH}/data/estado_sectores.json"
 )
 
 DB_URL = (
     f"https://raw.githubusercontent.com/"
-    f"{GITHUB_USER}/{REPO_NAME}/{BRANCH}/hidro_datos.db"
+    f"{GITHUB_USER}/{REPO_NAME}/{BRANCH}/data/hidro_datos.db"
 )
 
-# --- CONFIGURACIÓN ÚNICA ---
+# ==============================
+# CONFIGURACIÓN STREAMLIT
+# ==============================
 st.set_page_config(
     page_title="Sectores Hidráulicos CIATEQ",
     page_icon="💧",
@@ -61,7 +63,9 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --- BOTÓN DE NAVEGACIÓN ---
+# ==============================
+# NAVEGACIÓN ENTRE VISTAS
+# ==============================
 if "vista_actual" not in st.session_state:
     st.session_state.vista_actual = "interactivo"
 
@@ -131,7 +135,7 @@ if st.session_state.vista_actual == "interactivo":
         with open(geojson_path, "r", encoding="utf-8") as f:
             st.session_state.geojson_data = json.load(f)
 
-    estado_presion_raw = cargar_estado_desde_github()
+    estado_presion = cargar_estado_desde_github()
 
     centro = [24.117124, -110.358397]
     m = folium.Map(location=centro, zoom_start=12)
@@ -139,7 +143,7 @@ if st.session_state.vista_actual == "interactivo":
 
     for feature in st.session_state.geojson_data["features"]:
         nombre = feature["properties"].get("name", "Sin nombre")
-        data = estado_presion_raw.get(nombre, {})
+        data = estado_presion.get(nombre, {})
         valor = data.get("valor", 0.0)
         timestamp = data.get("timestamp", "N/A")
         rssi = data.get("rssi", "N/A")
@@ -198,9 +202,8 @@ elif st.session_state.vista_actual == "historico":
         st.warning("⚠️ No hay videos disponibles")
         st.stop()
 
-    fecha_sel = st.selectbox("Día", fechas)
+    fecha_sel = st.selectbox("Selecciona un día", fechas)
     video_url = f"https://{GITHUB_USER}.github.io/{REPO_NAME}/hidro-videos/presion_{fecha_sel}.mp4"
-
     st.video(video_url)
 
 # ==============================
@@ -226,9 +229,15 @@ else:
         st.stop()
 
     with sqlite3.connect(db_path) as conn:
-        dispositivos = pd.read_sql("SELECT DISTINCT dispositivo FROM lecturas", conn)['dispositivo'].tolist()
+        dispositivos = pd.read_sql(
+            "SELECT DISTINCT dispositivo FROM lecturas", conn
+        )['dispositivo'].tolist()
 
-    dispositivos_sel = st.multiselect("Sectores", dispositivos, default=dispositivos[:3])
+    dispositivos_sel = st.multiselect(
+        "Seleccionar sectores",
+        dispositivos,
+        default=dispositivos[:3] if len(dispositivos) >= 3 else dispositivos
+    )
 
     if st.button("🔄 Cargar datos"):
         with sqlite3.connect(db_path) as conn:
@@ -239,10 +248,13 @@ else:
 
         df['fecha'] = pd.to_datetime(df['timestamp'], format='%d-%m-%Y %H:%M')
 
-        chart = alt.Chart(df[df['dispositivo'].isin(dispositivos_sel)]).mark_line().encode(
+        chart = alt.Chart(
+            df[df['dispositivo'].isin(dispositivos_sel)]
+        ).mark_line(point=True).encode(
             x='fecha:T',
             y='valor:Q',
-            color='dispositivo:N'
+            color='dispositivo:N',
+            tooltip=['dispositivo', 'valor', 'timestamp']
         ).interactive()
 
         st.altair_chart(chart, use_container_width=True)
