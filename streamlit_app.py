@@ -148,9 +148,13 @@ else:
         with sqlite3.connect(db_path) as conn:
             df = pd.read_sql("SELECT * FROM lecturas", conn)
 
+        # ---- CONVERSIÓN DE FECHA ----
         df["fecha"] = pd.to_datetime(
             df["timestamp"], format="%d-%m-%Y %H:%M"
         )
+
+        # ---- FECHA FORMATEADA EN ESPAÑOL PARA TOOLTIP ----
+        df["fecha_str"] = df["fecha"].dt.strftime("%d/%m/%y %H:%M:%S")
 
         df = df[df["dispositivo"].isin(seleccion)]
 
@@ -161,13 +165,16 @@ else:
                 x=alt.X(
                     "fecha:T",
                     title="Fecha y hora",
-                    axis=alt.Axis(format="%d-%m-%Y %H:%M")
+                    axis=alt.Axis(
+                        format="%d/%m/%y\n%H:%M:%S",
+                        labelAngle=0
+                    )
                 ),
                 y=alt.Y("valor:Q", title="Presión (kg/cm²)"),
                 color=alt.Color("dispositivo:N", title="Sector"),
                 tooltip=[
                     alt.Tooltip("dispositivo:N", title="Sector"),
-                    alt.Tooltip("fecha:T", title="Fecha"),
+                    alt.Tooltip("fecha_str:N", title="Fecha"),
                     alt.Tooltip("valor:Q", title="Presión", format=".2f")
                 ]
             )
