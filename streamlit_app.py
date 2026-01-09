@@ -3,7 +3,7 @@ import streamlit as st
 import folium
 import json
 import requests
-from datetime import date, timedelta, datetime
+from datetime import date, timedelta, datetime, timezone
 from folium.plugins import Fullscreen
 from streamlit_folium import st_folium
 from streamlit_autorefresh import st_autorefresh
@@ -27,18 +27,14 @@ ESTADO_JSON_URL = (
 
 DB_URL = "https://github.com/AlarmasCiateq/mi-mapa-sectores/releases/download/latest/hidro_datos.db"
 
-# ==============================
-# CONFIGURACIÓN STREAMLIT
-# ==============================
+# --- CONFIGURACIÓN ---
 st.set_page_config(
     page_title="Sectores Hidráulicos CIATEQ",
     page_icon="💧",
     layout="centered"
 )
 
-# ==============================
-# MARCA DE AGUA
-# ==============================
+# --- MARCA DE AGUA ---
 st.markdown(
     """
     <div style="
@@ -59,9 +55,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ==============================
-# NAVEGACIÓN
-# ==============================
+# --- NAVEGACIÓN ---
 if "vista_actual" not in st.session_state:
     st.session_state.vista_actual = "interactivo"
 
@@ -136,7 +130,7 @@ if st.session_state.vista_actual == "interactivo":
 
     centro = [24.117124, -110.358397]
     m = folium.Map(location=centro, zoom_start=12)
-    m.add_child(Fullscreen(position="topleft"))
+    m.add_child(Fullscreen(position='topleft'))
 
     for feature in st.session_state.geojson_data["features"]:
         nombre = feature["properties"].get("name", "Sin nombre")
@@ -228,87 +222,94 @@ else:
     st.subheader("📊 Análisis Histórico de Presión en Sectores")
 
     @st.cache_data(ttl=300)
-    def cargar_datos_release():
-        db_path = "temp_db_release.db"
+    def descargar_db():
         r = requests.get(DB_URL, timeout=15)
-        r.raise_for_status()
+        if r.status_code != 200:
+            raise RuntimeError("Error al descargar BD")
+
+        db_path = "temp_db.db"
         with open(db_path, "wb") as f:
             f.write(r.content)
 
-        # Obtener fecha de última modificación desde headers
+        # Obtener fecha de subida (UTC -> UTC-6)
         last_modified = r.headers.get("Last-Modified", "Desconocida")
         if last_modified != "Desconocida":
             try:
                 last_modified_dt = datetime.strptime(last_modified, "%a, %d %b %Y %H:%M:%S %Z")
+                last_modified_dt = last_modified_dt.replace(tzinfo=timezone.utc) - timedelta(hours=6)
                 last_modified_str = last_modified_dt.strftime("%d/%m/%Y %H:%M:%S")
             except:
                 last_modified_str = last_modified
         else:
             last_modified_str = last_modified
 
-        with sqlite3.connect(db_path) as conn:
-            df = pd.read_sql(
-                "SELECT id, dispositivo, valor, timestamp FROM lecturas ORDER BY id ASC",
-                conn
-            )
+        return db_path, last_modified_str
 
-        df["timestamp"] = pd.to_datetime(df["timestamp"], format="%d-%m-%Y %H:%M", errors="coerce")
-        df = df.dropna(subset=["timestamp"])
+    db_path, db_fecha = descargar_db()
+    st.text(f"Base de datos tomada de GitHub Release (hora local UTC-6): {db_fecha}")
 
-        return df, last_modified_str
-
-    df_all, db_last_mod = cargar_datos_release()
-
-    dispositivos = sorted(df_all["dispositivo"].unique())
+    with sqlite3.connect(db_path) as conn:
+        dispositivos = pd.read_sql(
+            "SELECT DISTINCT dispositivo FROM lecturas",
+            conn
+        )["dispositivo"].tolist()
 
     dispositivos_sel = st.multiselect(
         "Sectores",
         dispositivos,
-        default=dispositivos[:3] if dispositivos else []
+        default=dispositivos[:3]
     )
 
     if st.button("🔄 Cargar"):
 
-        if not dispositivos_sel:
-            st.warning("Selecciona al menos un sector.")
-            st.stop()
+        def cargar_datos():
+            with sqlite3.connect(db_path) as conn:
+                df = pd.read_sql(
+                    "SELECT * FROM lecturas ORDER BY id ASC",
+                    conn
+                )
+            df["timestamp"] = pd.to_datetime(df["timestamp"])
+            return df
 
-        df_sel_all = df_all[df_all["dispositivo"].isin(dispositivos_sel)]
-        if df_sel_all.empty:
-            st.warning("No hay datos para los sectores seleccionados.")
-            st.stop()
+        df = cargar_datos()
+        df = df[df["dispositivo"].isin(dispositivos_sel)]
 
-        ultimo_ts = df_sel_all["timestamp"].max()
-        inicio_ventana = ultimo_ts - timedelta(days=1)
-
-        df_sel_all["fecha_str"] = df_sel_all["timestamp"].dt.strftime("%d/%m/%y %H:%M:%S")
+        # Último dato disponible
+        ultimo = df["timestamp"].max()
+        inicio_visible = ultimo - timedelta(hours=24)
 
         chart = (
-            alt.Chart(df_sel_all)
+            alt.Chart(df)
             .mark_line(point=True)
             .encode(
                 x=alt.X(
                     "timestamp:T",
                     title="Fecha y hora",
-                    scale=alt.Scale(domain=[inicio_ventana, ultimo_ts]),
-                    axis=alt.Axis(format="%d/%m/%y %H:%M:%S", grid=True, gridColor="#cccccc", gridOpacity=0.6)
+                    scale=alt.Scale(domain=[inicio_visible, ultimo]),
+                    axis=alt.Axis(
+                        format="%d/%m/%y %H:%M:%S",
+                        grid=True,
+                        gridColor="#cccccc",
+                        gridOpacity=0.6
+                    )
                 ),
                 y=alt.Y(
                     "valor:Q",
                     title="Presión (kg/cm²)",
-                    axis=alt.Axis(grid=True, gridColor="#cccccc", gridOpacity=0.6)
+                    axis=alt.Axis(
+                        grid=True,
+                        gridColor="#cccccc",
+                        gridOpacity=0.6
+                    )
                 ),
-                color=alt.Color("dispositivo:N", legend=alt.Legend(orient="bottom", title="Sector")),
+                color=alt.Color("dispositivo:N", legend=alt.Legend(orient="bottom")),
                 tooltip=[
                     alt.Tooltip("dispositivo:N", title="Sector"),
-                    alt.Tooltip("fecha_str:N", title="Fecha y hora"),
+                    alt.Tooltip("timestamp:T", title="Fecha", format="%d/%m/%y %H:%M:%S"),
                     alt.Tooltip("valor:Q", title="Presión", format=".2f")
                 ]
             )
-            .properties(height=350)
             .interactive()
         )
 
         st.altair_chart(chart, use_container_width=True)
-
-        st.markdown(f"**Última actualización de base de datos:** {db_last_mod}")
