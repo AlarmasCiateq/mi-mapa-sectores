@@ -6,4 +6,6 @@ requests
 streamlit-autorefresh
 altair
 pandas
+plotly
+
 
