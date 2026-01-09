@@ -174,7 +174,6 @@ else:
             ),
             y=alt.Y(
                 "valor:Q",
-                title="Presión (kg/cm²)",
                 axis=alt.Axis(
                     grid=True,
                     gridColor="#b0b0b0",
