@@ -26,7 +26,8 @@ ESTADO_JSON_URL = (
     f"https://raw.githubusercontent.com/{GITHUB_USER}/{REPO_NAME}/{BRANCH}/data/estado_sectores.json"
 )
 
-DB_URL = f"https://github.com/{GITHUB_USER}/{REPO_NAME}/releases/download/latest/hidro_datos.db"
+DB_RELEASE_URL = f"https://api.github.com/repos/{GITHUB_USER}/{REPO_NAME}/releases/latest"
+DB_DOWNLOAD_URL = f"https://github.com/{GITHUB_USER}/{REPO_NAME}/releases/download/latest/hidro_datos.db"
 
 # --- CONFIGURACIÓN ---
 st.set_page_config(
@@ -224,17 +225,24 @@ else:
 
     @st.cache_data(ttl=300)
     def descargar_db():
-        r = requests.get(DB_URL, timeout=15)
+        # Descargar el archivo de la release
+        r = requests.get(DB_RELEASE_URL, timeout=15)
         if r.status_code != 200:
-            raise RuntimeError("Error al descargar BD")
+            raise RuntimeError("Error al descargar BD info de Release")
 
+        release_info = r.json()
+        # Obtener fecha de publicación de la release (UTC)
+        fecha_github_utc = release_info["published_at"]
+        fecha_github = datetime.strptime(fecha_github_utc, "%Y-%m-%dT%H:%M:%SZ") + HORA_MEXICO
+
+        # Descargar el archivo de la release
+        r_file = requests.get(DB_DOWNLOAD_URL, timeout=15)
         db_path = "temp_db.db"
         with open(db_path, "wb") as f:
-            f.write(r.content)
+            f.write(r_file.content)
 
-        # Mostrar fecha de la BD en horario de México (GMT-6)
-        fecha_mex = datetime.utcnow() + HORA_MEXICO
-        st.info(f"Base de datos tomada de GitHub Release. Fecha de descarga (México GMT-6): {fecha_mex.strftime('%d/%m/%Y %H:%M')}")
+        # Mostrar fecha de subida al GitHub en hora de México
+        st.info(f"Base de datos tomada de GitHub Release. Fecha de subida (México GMT-6): {fecha_github.strftime('%d/%m/%Y %H:%M')}")
 
         return db_path
 
@@ -266,7 +274,7 @@ else:
 
         df_sel = df[df["dispositivo"].isin(dispositivos_sel)]
 
-        # Definir rango de 24 horas desde la última fecha
+        # Definir rango de 24 horas desde la última fecha visible
         if not df_sel.empty:
             ultima_fecha = df_sel["timestamp"].max()
             inicio = ultima_fecha - pd.Timedelta(days=1)
