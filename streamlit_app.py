@@ -239,14 +239,12 @@ else:
         with sqlite3.connect(db_path) as conn:
             df_all = pd.read_sql("SELECT dispositivo, valor, timestamp FROM lecturas", conn)
 
-        # parsear con formato exacto y descartar inválidos
         df_all["timestamp"] = pd.to_datetime(df_all["timestamp"], format="%d-%m-%Y %H:%M", errors="coerce")
         df_all = df_all.dropna(subset=["timestamp"])
         return df_all
 
     df_all = descargar_db_a_df()
 
-    # lista de dispositivos basada en TODOS los datos
     dispositivos = sorted(df_all["dispositivo"].unique())
 
     dispositivos_sel = st.multiselect(
@@ -255,45 +253,47 @@ else:
         default=dispositivos[:3] if dispositivos else []
     )
 
-    if not dispositivos_sel:
-        st.warning("Selecciona al menos un sector para ver la gráfica.")
-        st.stop()
+    if st.button("🔄 Cargar"):
 
-    # obtener último timestamp entre los registros de los sectores seleccionados
-    df_sel_all = df_all[df_all["dispositivo"].isin(dispositivos_sel)]
+        if not dispositivos_sel:
+            st.warning("Selecciona al menos un sector.")
+            st.stop()
 
-    if df_sel_all.empty:
-        st.warning("No hay datos para los sectores seleccionados.")
-        st.stop()
+        df_sel_all = df_all[df_all["dispositivo"].isin(dispositivos_sel)]
 
-    ultimo_ts = df_sel_all["timestamp"].max()
-    inicio_ventana = ultimo_ts - timedelta(days=1)
+        if df_sel_all.empty:
+            st.warning("No hay datos para los sectores seleccionados.")
+            st.stop()
 
-    # ahora filtramos los registros dentro de la ventana de 24 h (desde el último timestamp hacia atrás)
-    df_window = df_sel_all[(df_sel_all["timestamp"] >= inicio_ventana) & (df_sel_all["timestamp"] <= ultimo_ts)]
+        ultimo_ts = df_sel_all["timestamp"].max()
+        inicio_ventana = ultimo_ts - timedelta(days=1)
 
-    # siempre incluimos fecha formateada para tooltip
-    df_window["fecha_str"] = df_window["timestamp"].dt.strftime("%d/%m/%y %H:%M:%S")
+        df_window = df_sel_all[(df_sel_all["timestamp"] >= inicio_ventana) & (df_sel_all["timestamp"] <= ultimo_ts)]
+        df_window["fecha_str"] = df_window["timestamp"].dt.strftime("%d/%m/%y %H:%M:%S")
 
-    chart = (
-        alt.Chart(df_window)
-        .mark_line(point=True)
-        .encode(
-            x=alt.X(
-                "timestamp:T",
-                title="Fecha y hora",
-                axis=alt.Axis(format="%d/%m/%y %H:%M:%S", grid=True, gridColor="#cccccc", gridOpacity=0.6)
-            ),
-            y=alt.Y("valor:Q", title="Presión (kg/cm²)", axis=alt.Axis(grid=True, gridColor="#cccccc", gridOpacity=0.6)),
-            color=alt.Color("dispositivo:N", legend=alt.Legend(orient="bottom", title="Sector")),
-            tooltip=[
-                alt.Tooltip("dispositivo:N", title="Sector"),
-                alt.Tooltip("fecha_str:N", title="Fecha y hora"),
-                alt.Tooltip("valor:Q", title="Presión", format=".2f")
-            ]
+        chart = (
+            alt.Chart(df_window)
+            .mark_line(point=True)
+            .encode(
+                x=alt.X(
+                    "timestamp:T",
+                    title="Fecha y hora",
+                    axis=alt.Axis(format="%d/%m/%y %H:%M:%S", grid=True, gridColor="#cccccc", gridOpacity=0.6)
+                ),
+                y=alt.Y(
+                    "valor:Q",
+                    title="Presión (kg/cm²)",
+                    axis=alt.Axis(grid=True, gridColor="#cccccc", gridOpacity=0.6)
+                ),
+                color=alt.Color("dispositivo:N", legend=alt.Legend(orient="bottom", title="Sector")),
+                tooltip=[
+                    alt.Tooltip("dispositivo:N", title="Sector"),
+                    alt.Tooltip("fecha_str:N", title="Fecha y hora"),
+                    alt.Tooltip("valor:Q", title="Presión", format=".2f")
+                ]
+            )
+            .properties(height=350)
+            .interactive()
         )
-        .properties(height=350)
-        .interactive()
-    )
 
-    st.altair_chart(chart, use_container_width=True)
+        st.altair_chart(chart, use_container_width=True)
