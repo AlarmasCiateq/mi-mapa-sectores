@@ -237,7 +237,10 @@ else:
             f.write(r.content)
 
         with sqlite3.connect(db_path) as conn:
-            df_all = pd.read_sql("SELECT dispositivo, valor, timestamp FROM lecturas", conn)
+            df_all = pd.read_sql(
+                "SELECT id, dispositivo, valor, timestamp FROM lecturas ORDER BY id ASC",
+                conn
+            )
 
         df_all["timestamp"] = pd.to_datetime(df_all["timestamp"], format="%d-%m-%Y %H:%M", errors="coerce")
         df_all = df_all.dropna(subset=["timestamp"])
@@ -267,7 +270,7 @@ else:
         ultimo_ts = df_sel_all["timestamp"].max()
         inicio_ventana = ultimo_ts - timedelta(days=1)
 
-        # Aquí NO filtramos los datos, solo limitamos el dominio visible
+        # NO filtramos los datos, solo limitamos la ventana visual
         df_sel_all["fecha_str"] = df_sel_all["timestamp"].dt.strftime("%d/%m/%y %H:%M:%S")
 
         chart = (
