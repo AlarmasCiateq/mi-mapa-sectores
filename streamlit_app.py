@@ -261,6 +261,9 @@ else:
 
         df = df[df["dispositivo"].isin(dispositivos_sel)]
 
+        inicio = df["fecha"].min()
+        fin = inicio + timedelta(days=1)
+
         chart = (
             alt.Chart(df)
             .mark_line(point=True)
@@ -268,6 +271,7 @@ else:
                 x=alt.X(
                     "fecha:T",
                     title="Fecha y hora",
+                    scale=alt.Scale(domain=[inicio, fin]),
                     axis=alt.Axis(
                         format="%d/%m/%y %H:%M:%S",
                         grid=True,
