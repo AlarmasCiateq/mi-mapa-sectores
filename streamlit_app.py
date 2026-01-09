@@ -25,9 +25,7 @@ ESTADO_JSON_URL = (
     f"https://raw.githubusercontent.com/{GITHUB_USER}/{REPO_NAME}/{BRANCH}/data/estado_sectores.json"
 )
 
-DB_URL = (
-    f"https://raw.githubusercontent.com/{GITHUB_USER}/{REPO_NAME}/{BRANCH}/data/presion.db"
-)
+DB_URL = "https://github.com/AlarmasCiateq/mi-mapa-sectores/releases/download/v1.0/presion.db"
 
 # --- CONFIGURACIÓN ÚNICA (DEBE SER LA PRIMERA) ---
 st.set_page_config(
@@ -252,3 +250,4 @@ else:
         ).interactive()
 
         st.altair_chart(chart, use_container_width=True)
+
