@@ -13,6 +13,7 @@ import sqlite3
 import altair as alt
 
 MAX_PRESION = 3.0
+HORA_MEXICO = timedelta(hours=-6)
 
 # ==============================
 # FUENTES DE DATOS (GITHUB)
@@ -231,8 +232,9 @@ else:
         with open(db_path, "wb") as f:
             f.write(r.content)
 
-        # Mostrar fecha de la BD descargada
-        st.info(f"Base de datos tomada de GitHub Release. Fecha de descarga: {datetime.utcnow().strftime('%d/%m/%Y %H:%M UTC')}")
+        # Mostrar fecha de la BD en horario de México (GMT-6)
+        fecha_mex = datetime.utcnow() + HORA_MEXICO
+        st.info(f"Base de datos tomada de GitHub Release. Fecha de descarga (México GMT-6): {fecha_mex.strftime('%d/%m/%Y %H:%M')}")
 
         return db_path
 
@@ -264,7 +266,7 @@ else:
 
         df_sel = df[df["dispositivo"].isin(dispositivos_sel)]
 
-        # Definir rango de 24 horas desde ahora o último dato
+        # Definir rango de 24 horas desde la última fecha
         if not df_sel.empty:
             ultima_fecha = df_sel["timestamp"].max()
             inicio = ultima_fecha - pd.Timedelta(days=1)
