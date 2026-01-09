@@ -112,9 +112,7 @@ if st.session_state.vista_actual == "interactivo":
 
         folium.Marker(
             [centro.y, centro.x],
-            icon=folium.DivIcon(
-                html=f"<b>{valor:.2f}</b>"
-            )
+            icon=folium.DivIcon(html=f"<b>{valor:.2f}</b>")
         ).add_to(m)
 
     st_folium(m, width="100%", height=550)
@@ -168,6 +166,7 @@ else:
                 "fecha:T",
                 scale=alt.Scale(domain=[fecha_min, fecha_max]),
                 axis=alt.Axis(
+                    format="%d/%m/%y %H:%M:%S",
                     grid=True,
                     gridColor="#b0b0b0",
                     gridOpacity=0.4
