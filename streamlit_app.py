@@ -142,6 +142,8 @@ if st.session_state.vista_actual == "interactivo":
         nombre = feature["properties"].get("name", "Sin nombre")
         sector_data = estado_presion_raw.get(nombre, {})
         valor = sector_data.get("valor", 0.0)
+        fill_color = interpolar_color(valor)
+        fill_opacity = 0.2 + 0.5 * (valor / MAX_PRESION)
         timestamp = sector_data.get("timestamp", "N/A")
         rssi = sector_data.get("rssi", "N/A")
 
@@ -228,10 +230,13 @@ else:
     @st.cache_data(ttl=300)
     def descargar_db():
         r = requests.get(DB_URL, timeout=15)
-        r.raise_for_status()
+        if r.status_code != 200:
+            raise RuntimeError("Error al descargar BD")
+
         db_path = "temp_db.db"
         with open(db_path, "wb") as f:
             f.write(r.content)
+
         return db_path
 
     db_path = descargar_db()
@@ -255,21 +260,37 @@ else:
                 conn,
             )
 
+        # parseamos con el formato correcto y descartamos lo que no se pueda parsear
         df["timestamp"] = pd.to_datetime(
-            df["timestamp"], format="%d-%m-%Y %H:%M"
+            df["timestamp"], format="%d-%m-%Y %H:%M", errors="coerce"
         )
+        df = df.dropna(subset=["timestamp"])
 
+        # último timestamp en la tabla
         ultimo_ts = df["timestamp"].max()
-        inicio_ventana = ultimo_ts - timedelta(days=1)
 
+        # ahora: si hay ALGÚN dato en las últimas 24 h respecto a 'ahora',
+        # mostramos ventana desde ahora-24h hasta ahora.
+        # Si no hay datos recientes, mostramos ventana desde (ultimo_ts - 24h) hasta ultimo_ts.
+        ahora = datetime.now()
+        hay_datos_ultimas_24h = df["timestamp"].ge(ahora - timedelta(days=1)).any()
+
+        if hay_datos_ultimas_24h:
+            fin_ventana = ahora
+        else:
+            fin_ventana = ultimo_ts
+
+        inicio_ventana = fin_ventana - timedelta(days=1)
+
+        # filtramos por ventana y por dispositivos seleccionados
         df = df[
             (df["timestamp"] >= inicio_ventana)
+            & (df["timestamp"] <= fin_ventana)
             & (df["dispositivo"].isin(dispositivos_sel))
         ]
 
-        df["fecha_str"] = df["timestamp"].dt.strftime(
-            "%d/%m/%y %H:%M:%S"
-        )
+        # columna para tooltip con formato dd/mm/aa hh:mm:ss
+        df["fecha_str"] = df["timestamp"].dt.strftime("%d/%m/%y %H:%M:%S")
 
         chart = (
             alt.Chart(df)
@@ -296,10 +317,7 @@ else:
                 ),
                 color=alt.Color(
                     "dispositivo:N",
-                    legend=alt.Legend(
-                        orient="bottom",
-                        title="Sector",
-                    ),
+                    legend=alt.Legend(orient="bottom", title="Sector"),
                 ),
                 tooltip=[
                     alt.Tooltip("dispositivo:N", title="Sector"),
