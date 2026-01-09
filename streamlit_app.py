@@ -260,7 +260,6 @@ else:
             st.stop()
 
         df_sel_all = df_all[df_all["dispositivo"].isin(dispositivos_sel)]
-
         if df_sel_all.empty:
             st.warning("No hay datos para los sectores seleccionados.")
             st.stop()
@@ -268,16 +267,17 @@ else:
         ultimo_ts = df_sel_all["timestamp"].max()
         inicio_ventana = ultimo_ts - timedelta(days=1)
 
-        df_window = df_sel_all[(df_sel_all["timestamp"] >= inicio_ventana) & (df_sel_all["timestamp"] <= ultimo_ts)]
-        df_window["fecha_str"] = df_window["timestamp"].dt.strftime("%d/%m/%y %H:%M:%S")
+        # Aquí NO filtramos los datos, solo limitamos el dominio visible
+        df_sel_all["fecha_str"] = df_sel_all["timestamp"].dt.strftime("%d/%m/%y %H:%M:%S")
 
         chart = (
-            alt.Chart(df_window)
+            alt.Chart(df_sel_all)
             .mark_line(point=True)
             .encode(
                 x=alt.X(
                     "timestamp:T",
                     title="Fecha y hora",
+                    scale=alt.Scale(domain=[inicio_ventana, ultimo_ts]),
                     axis=alt.Axis(format="%d/%m/%y %H:%M:%S", grid=True, gridColor="#cccccc", gridOpacity=0.6)
                 ),
                 y=alt.Y(
