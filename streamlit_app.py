@@ -3,7 +3,7 @@ import streamlit as st
 import folium
 import json
 import requests
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from folium.plugins import Fullscreen
 from streamlit_folium import st_folium
 from streamlit_autorefresh import st_autorefresh
@@ -25,12 +25,10 @@ ESTADO_JSON_URL = (
     f"https://raw.githubusercontent.com/{GITHUB_USER}/{REPO_NAME}/{BRANCH}/data/estado_sectores.json"
 )
 
-DB_URL = (
-    "https://github.com/AlarmasCiateq/mi-mapa-sectores/releases/download/latest/hidro_datos.db"
-)
+DB_URL = "https://github.com/AlarmasCiateq/mi-mapa-sectores/releases/download/latest/hidro_datos.db"
 
 # ==============================
-# CONFIGURACIÓN
+# CONFIGURACIÓN STREAMLIT
 # ==============================
 st.set_page_config(
     page_title="Sectores Hidráulicos CIATEQ",
@@ -53,6 +51,7 @@ st.markdown(
         background-color: #111;
         padding: 5px 10px;
         border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     ">
         💧 CIATEQ® 💦 2025 ©
     </div>
@@ -66,31 +65,48 @@ st.markdown(
 if "vista_actual" not in st.session_state:
     st.session_state.vista_actual = "interactivo"
 
-col1, col2 = st.columns(2)
+if st.session_state.vista_actual == "interactivo":
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("🎬 Ir a evolución histórica"):
+            st.session_state.vista_actual = "historico"
+            st.rerun()
+    with col2:
+        if st.button("📊 Ir a análisis de datos"):
+            st.session_state.vista_actual = "analisis"
+            st.rerun()
 
-with col1:
-    if st.button("⏱ Mapa tiempo real"):
-        st.session_state.vista_actual = "interactivo"
-        st.rerun()
+elif st.session_state.vista_actual == "historico":
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("⏱ Ir al mapa en tiempo real"):
+            st.session_state.vista_actual = "interactivo"
+            st.rerun()
+    with col2:
+        if st.button("📊 Ir a análisis de datos"):
+            st.session_state.vista_actual = "analisis"
+            st.rerun()
 
-with col2:
-    if st.button("🎬 Evolución histórica"):
-        st.session_state.vista_actual = "historico"
-        st.rerun()
-
-if st.button("📊 Análisis de datos"):
-    st.session_state.vista_actual = "analisis"
-    st.rerun()
+else:
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("⏱ Ir al mapa en tiempo real"):
+            st.session_state.vista_actual = "interactivo"
+            st.rerun()
+    with col2:
+        if st.button("🎬 Ir a evolución histórica"):
+            st.session_state.vista_actual = "historico"
+            st.rerun()
 
 st.divider()
 
 # ==============================
-# VISTA 1: MAPA
+# VISTA 1: MAPA EN TIEMPO REAL
 # ==============================
 if st.session_state.vista_actual == "interactivo":
 
     st.subheader("💧 Presión en Sectores Hidráulicos en Tiempo Real")
-    st_autorefresh(interval=60000, key="reload")
+    st_autorefresh(interval=60000, key="data_reloader")
 
     def interpolar_color(valor):
         pct = max(0.0, min(valor / MAX_PRESION, 1.0))
@@ -98,117 +114,140 @@ if st.session_state.vista_actual == "interactivo":
         g = int(255 * (1 - pct))
         return f"#{r:02x}{g:02x}00"
 
-    def cargar_estado():
+    def cargar_estado_desde_github():
         try:
             r = requests.get(ESTADO_JSON_URL, timeout=10)
             r.raise_for_status()
             return r.json()
-        except:
+        except Exception as e:
+            st.warning(f"No se pudo cargar datos: {e}")
             return {}
 
     geojson_path = "data/geojson/sector_hidraulico.geojson"
     if not os.path.exists(geojson_path):
-        st.error("GeoJSON no encontrado")
+        st.error(f"❌ GeoJSON no encontrado: {geojson_path}")
         st.stop()
 
-    with open(geojson_path, encoding="utf-8") as f:
-        geojson_data = json.load(f)
+    if "geojson_data" not in st.session_state:
+        with open(geojson_path, "r", encoding="utf-8") as f:
+            st.session_state.geojson_data = json.load(f)
 
-    estado = cargar_estado()
+    estado_presion_raw = cargar_estado_desde_github()
 
-    m = folium.Map(location=[24.117124, -110.358397], zoom_start=12)
-    m.add_child(Fullscreen())
+    centro = [24.117124, -110.358397]
+    m = folium.Map(location=centro, zoom_start=12)
+    m.add_child(Fullscreen(position="topleft"))
 
-    for feature in geojson_data["features"]:
-        nombre = feature["properties"].get("name", "N/A")
-        data = estado.get(nombre, {})
-        valor = float(data.get("valor", 0))
-        timestamp = data.get("timestamp", "N/A")
-        rssi = data.get("rssi", "N/A")
+    for feature in st.session_state.geojson_data["features"]:
+        nombre = feature["properties"].get("name", "Sin nombre")
+        sector_data = estado_presion_raw.get(nombre, {})
+        valor = sector_data.get("valor", 0.0)
+        timestamp = sector_data.get("timestamp", "N/A")
+        rssi = sector_data.get("rssi", "N/A")
 
         geom = shape(feature["geometry"])
-        centro = geom.centroid
+        centro_poligono = geom.centroid
 
         folium.Marker(
-            [centro.y, centro.x],
+            location=[centro_poligono.y, centro_poligono.x],
             icon=folium.DivIcon(
-                html=f"<div style='font-size:10px;font-weight:bold'>{valor:.2f}</div>"
+                html=f'<div style="font-size:10px;font-weight:bold;color:black;text-align:center">{valor:.2f}kg/cm²</div>'
             )
         ).add_to(m)
+
+        tooltip_html = f"""
+        <b>{nombre}</b>
+        <table style="font-size:11px">
+        <tr><td>Presión:</td><td>{valor:.2f}kg/cm²</td></tr>
+        <tr><td>Hora:</td><td>{timestamp}</td></tr>
+        <tr><td>RSSI:</td><td>{rssi}</td></tr>
+        </table>
+        """
 
         folium.GeoJson(
             feature,
             style_function=lambda x, v=valor: {
                 "fillColor": interpolar_color(v),
                 "color": "#000",
-                "weight": 1.2,
-                "fillOpacity": 0.6,
+                "weight": 1.5,
+                "fillOpacity": 0.2 + 0.5 * (v / MAX_PRESION),
             },
-            tooltip=folium.Tooltip(
-                f"""
-                <b>{nombre}</b><br>
-                Presión: {valor:.2f} kg/cm²<br>
-                Hora: {timestamp}<br>
-                RSSI: {rssi}
-                """,
-                sticky=True,
-            ),
+            tooltip=folium.Tooltip(tooltip_html, sticky=True),
         ).add_to(m)
 
     st_folium(m, width="100%", height=550)
 
 # ==============================
-# VISTA 2: VIDEO
+# VISTA 2: EVOLUCIÓN HISTÓRICA
 # ==============================
 elif st.session_state.vista_actual == "historico":
 
-    st.subheader("💧 Evolución Histórica")
+    st.subheader("💧 Evolución de Presión en Sectores Hidráulicos")
 
-    fechas = []
-    hoy = date.today()
+    @st.cache_data(ttl=3600)
+    def obtener_fechas_disponibles():
+        fechas = []
+        hoy = date.today()
+        for i in range(60):
+            f = hoy - timedelta(days=i)
+            url = f"https://{GITHUB_USER}.github.io/{REPO_NAME}/hidro-videos/presion_{f}.mp4"
+            try:
+                if requests.head(url, timeout=3).status_code == 200:
+                    fechas.append(f)
+            except:
+                pass
+        return fechas
 
-    for i in range(60):
-        f = hoy - timedelta(days=i)
-        url = f"https://{GITHUB_USER}.github.io/{REPO_NAME}/hidro-videos/presion_{f}.mp4"
-        try:
-            if requests.head(url, timeout=3).status_code == 200:
-                fechas.append(f)
-        except:
-            pass
-
+    fechas = obtener_fechas_disponibles()
     if not fechas:
-        st.warning("No hay videos disponibles")
+        st.warning("⚠️ No hay videos disponibles.")
         st.stop()
 
     seleccion = st.selectbox(
-        "Selecciona un día",
-        fechas,
-        format_func=lambda x: x.strftime("%d-%m-%Y"),
+        "Selecciona un día:",
+        options=fechas,
+        format_func=lambda f: f.strftime("%d-%m-%Y"),
     )
+
+    video_url = f"https://{GITHUB_USER}.github.io/{REPO_NAME}/hidro-videos/presion_{seleccion}.mp4"
 
     st.markdown(
         f"""
-        <video src="https://{GITHUB_USER}.github.io/{REPO_NAME}/hidro-videos/presion_{seleccion}.mp4"
-               controls style="width:100%; border-radius:8px;"></video>
+        <video src="{video_url}" controls style="width:100%; border-radius:8px;"></video>
         """,
         unsafe_allow_html=True,
     )
 
 # ==============================
-# VISTA 3: ANÁLISIS (FIX REAL)
+# VISTA 3: ANÁLISIS DE DATOS
 # ==============================
 else:
 
-    st.subheader("📊 Presión – últimas 24 h")
+    st.subheader("📊 Análisis Histórico de Presión en Sectores")
 
     @st.cache_data(ttl=300)
-    def cargar_datos():
-        db_path = "temp_db.db"
+    def descargar_db():
         r = requests.get(DB_URL, timeout=15)
         r.raise_for_status()
-
+        db_path = "temp_db.db"
         with open(db_path, "wb") as f:
             f.write(r.content)
+        return db_path
+
+    db_path = descargar_db()
+
+    with sqlite3.connect(db_path) as conn:
+        dispositivos = pd.read_sql(
+            "SELECT DISTINCT dispositivo FROM lecturas", conn
+        )["dispositivo"].tolist()
+
+    dispositivos_sel = st.multiselect(
+        "Sectores",
+        dispositivos,
+        default=dispositivos[:3],
+    )
+
+    if st.button("🔄 Cargar"):
 
         with sqlite3.connect(db_path) as conn:
             df = pd.read_sql(
@@ -217,45 +256,58 @@ else:
             )
 
         df["timestamp"] = pd.to_datetime(
-            df["timestamp"],
-            format="%d-%m-%Y %H:%M",
-            errors="coerce"
+            df["timestamp"], format="%d-%m-%Y %H:%M"
         )
 
-        df = df.dropna(subset=["timestamp"])
-        return df
+        ultimo_ts = df["timestamp"].max()
+        inicio_ventana = ultimo_ts - timedelta(days=1)
 
-    df = cargar_datos()
+        df = df[
+            (df["timestamp"] >= inicio_ventana)
+            & (df["dispositivo"].isin(dispositivos_sel))
+        ]
 
-    ultimo = df["timestamp"].max()
-    inicio = ultimo - timedelta(days=1)
-
-    df = df[df["timestamp"] >= inicio]
-
-    dispositivos = sorted(df["dispositivo"].unique())
-
-    seleccion = st.multiselect(
-        "Sectores",
-        dispositivos,
-        default=dispositivos[:3],
-    )
-
-    df = df[df["dispositivo"].isin(seleccion)]
-
-    chart = (
-        alt.Chart(df)
-        .mark_line(point=True)
-        .encode(
-            x=alt.X("timestamp:T", title="Fecha y hora"),
-            y=alt.Y("valor:Q", title="Presión (kg/cm²)"),
-            color=alt.Color("dispositivo:N", legend=alt.Legend(orient="bottom")),
-            tooltip=[
-                alt.Tooltip("timestamp:T", title="Fecha"),
-                alt.Tooltip("valor:Q", format=".2f"),
-            ],
+        df["fecha_str"] = df["timestamp"].dt.strftime(
+            "%d/%m/%y %H:%M:%S"
         )
-        .properties(height=350)
-        .interactive()
-    )
 
-    st.altair_chart(chart, use_container_width=True)
+        chart = (
+            alt.Chart(df)
+            .mark_line(point=True)
+            .encode(
+                x=alt.X(
+                    "timestamp:T",
+                    title="Fecha y hora",
+                    axis=alt.Axis(
+                        format="%d/%m/%y %H:%M:%S",
+                        grid=True,
+                        gridColor="#cccccc",
+                        gridOpacity=0.6,
+                    ),
+                ),
+                y=alt.Y(
+                    "valor:Q",
+                    title="Presión (kg/cm²)",
+                    axis=alt.Axis(
+                        grid=True,
+                        gridColor="#cccccc",
+                        gridOpacity=0.6,
+                    ),
+                ),
+                color=alt.Color(
+                    "dispositivo:N",
+                    legend=alt.Legend(
+                        orient="bottom",
+                        title="Sector",
+                    ),
+                ),
+                tooltip=[
+                    alt.Tooltip("dispositivo:N", title="Sector"),
+                    alt.Tooltip("fecha_str:N", title="Fecha y hora"),
+                    alt.Tooltip("valor:Q", title="Presión", format=".2f"),
+                ],
+            )
+            .interactive()
+        )
+
+        st.altair_chart(chart, use_container_width=True)
