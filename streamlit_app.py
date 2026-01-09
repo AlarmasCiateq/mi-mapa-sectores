@@ -168,13 +168,13 @@ if st.session_state.vista_actual == "interactivo":
 
         folium.GeoJson(
             feature,
-            style_function=lambda x, v=valor: {
-                "fillColor": interpolar_color(v),
+            style_function=lambda x, fc=fill_color, fo=fill_opacity: {
+                "fillColor": fc,
                 "color": "#000",
                 "weight": 1.5,
-                "fillOpacity": 0.2 + 0.5 * (v / MAX_PRESION),
+                "fillOpacity": fo
             },
-            tooltip=folium.Tooltip(tooltip_html, sticky=True),
+            tooltip=folium.Tooltip(tooltip_html, sticky=True)
         ).add_to(m)
 
     st_folium(m, width="100%", height=550)
@@ -208,7 +208,7 @@ elif st.session_state.vista_actual == "historico":
     seleccion = st.selectbox(
         "Selecciona un día:",
         options=fechas,
-        format_func=lambda f: f.strftime("%d-%m-%Y"),
+        format_func=lambda f: f.strftime("%d-%m-%Y")
     )
 
     video_url = f"https://{GITHUB_USER}.github.io/{REPO_NAME}/hidro-videos/presion_{seleccion}.mp4"
@@ -217,7 +217,7 @@ elif st.session_state.vista_actual == "historico":
         f"""
         <video src="{video_url}" controls style="width:100%; border-radius:8px;"></video>
         """,
-        unsafe_allow_html=True,
+        unsafe_allow_html=True
     )
 
 # ==============================
@@ -228,104 +228,95 @@ else:
     st.subheader("📊 Análisis Histórico de Presión en Sectores")
 
     @st.cache_data(ttl=300)
-    def descargar_db():
-        r = requests.get(DB_URL, timeout=15)
-        if r.status_code != 200:
-            raise RuntimeError("Error al descargar BD")
-
+    def descargar_db_y_leer():
         db_path = "temp_db.db"
+        r = requests.get(DB_URL, timeout=15)
+        r.raise_for_status()
+
         with open(db_path, "wb") as f:
             f.write(r.content)
 
-        return db_path
+        with sqlite3.connect(db_path) as conn:
+            df_all = pd.read_sql("SELECT dispositivo, valor, timestamp FROM lecturas", conn)
 
-    db_path = descargar_db()
+        # parsear con formato conocido (tu formato es dd-mm-YYYY HH:MM)
+        df_all["timestamp"] = pd.to_datetime(df_all["timestamp"], format="%d-%m-%Y %H:%M", errors="coerce")
+        df_all = df_all.dropna(subset=["timestamp"])
+        return df_all
 
-    with sqlite3.connect(db_path) as conn:
-        dispositivos = pd.read_sql(
-            "SELECT DISTINCT dispositivo FROM lecturas", conn
-        )["dispositivo"].tolist()
+    df_all = descargar_db_y_leer()
+
+    # ventana basada en el último timestamp global disponible
+    ultimo_ts = df_all["timestamp"].max()
+    ventana_inicio = ultimo_ts - timedelta(days=1)
+
+    # datos dentro de la ventana (para todos los dispositivos)
+    df_window = df_all[(df_all["timestamp"] >= ventana_inicio) & (df_all["timestamp"] <= ultimo_ts)]
+
+    dispositivos = sorted(df_all["dispositivo"].unique())
 
     dispositivos_sel = st.multiselect(
         "Sectores",
         dispositivos,
-        default=dispositivos[:3],
+        default=dispositivos[:3]
     )
 
-    if st.button("🔄 Cargar"):
+    # datos filtrados por selección de dispositivos dentro de la ventana
+    df_sel = df_window[df_window["dispositivo"].isin(dispositivos_sel)].copy()
 
-        with sqlite3.connect(db_path) as conn:
-            df = pd.read_sql(
-                "SELECT dispositivo, valor, timestamp FROM lecturas",
-                conn,
-            )
+    # --- Si no hay datos para los dispositivos seleccionados en la ventana,
+    #     tomamos la última lectura disponible por cada dispositivo seleccionado (fallback)
+    if df_sel.empty:
+        fallback_rows = []
+        df_candidates = df_all[df_all["dispositivo"].isin(dispositivos_sel)]
+        if not df_candidates.empty:
+            # por cada dispositivo seleccionado, tomar su última fila (si existe)
+            last_per_device = df_candidates.sort_values("timestamp").groupby("dispositivo", as_index=False).last()
+            fallback_rows.append(last_per_device)
+            # concatenar y usar como df_sel
+            df_sel = pd.concat(fallback_rows, ignore_index=True)
+            # ajustamos el dominio mínimo si alguna fallback row queda fuera de la ventana
+            min_ts_included = df_sel["timestamp"].min()
+            if min_ts_included < ventana_inicio:
+                # ampliar la ventana lo mínimo necesario para incluir esas filas
+                ventana_inicio = min_ts_included
 
-        # parseamos con el formato correcto y descartamos lo que no se pueda parsear
-        df["timestamp"] = pd.to_datetime(
-            df["timestamp"], format="%d-%m-%Y %H:%M", errors="coerce"
+    # si sigue vacío (no hay datos en la BD para los dispositivos seleccionados), avisar y parar
+    if df_sel.empty:
+        st.warning("No hay datos disponibles para los sectores seleccionados.")
+        st.stop()
+
+    # preparar fecha en texto para tooltip (formato dd/mm/aa HH:MM:SS)
+    df_sel["fecha_str"] = df_sel["timestamp"].dt.strftime("%d/%m/%y %H:%M:%S")
+
+    # construir la gráfica usando el dominio calculado (ventana_inicio .. ultimo_ts)
+    chart = (
+        alt.Chart(df_sel)
+        .mark_line(point=True)
+        .encode(
+            x=alt.X(
+                "timestamp:T",
+                title="Fecha y hora",
+                scale=alt.Scale(domain=[ventana_inicio, ultimo_ts]),
+                axis=alt.Axis(format="%d/%m/%y %H:%M:%S", grid=True, gridColor="#cccccc", gridOpacity=0.6)
+            ),
+            y=alt.Y(
+                "valor:Q",
+                title="Presión (kg/cm²)",
+                axis=alt.Axis(grid=True, gridColor="#cccccc", gridOpacity=0.6)
+            ),
+            color=alt.Color(
+                "dispositivo:N",
+                legend=alt.Legend(orient="bottom", title="Sector")
+            ),
+            tooltip=[
+                alt.Tooltip("dispositivo:N", title="Sector"),
+                alt.Tooltip("fecha_str:N", title="Fecha y hora"),
+                alt.Tooltip("valor:Q", title="Presión", format=".2f"),
+            ]
         )
-        df = df.dropna(subset=["timestamp"])
+        .interactive()
+        .properties(height=350)
+    )
 
-        # último timestamp en la tabla
-        ultimo_ts = df["timestamp"].max()
-
-        # ahora: si hay ALGÚN dato en las últimas 24 h respecto a 'ahora',
-        # mostramos ventana desde ahora-24h hasta ahora.
-        # Si no hay datos recientes, mostramos ventana desde (ultimo_ts - 24h) hasta ultimo_ts.
-        ahora = datetime.now()
-        hay_datos_ultimas_24h = df["timestamp"].ge(ahora - timedelta(days=1)).any()
-
-        if hay_datos_ultimas_24h:
-            fin_ventana = ahora
-        else:
-            fin_ventana = ultimo_ts
-
-        inicio_ventana = fin_ventana - timedelta(days=1)
-
-        # filtramos por ventana y por dispositivos seleccionados
-        df = df[
-            (df["timestamp"] >= inicio_ventana)
-            & (df["timestamp"] <= fin_ventana)
-            & (df["dispositivo"].isin(dispositivos_sel))
-        ]
-
-        # columna para tooltip con formato dd/mm/aa hh:mm:ss
-        df["fecha_str"] = df["timestamp"].dt.strftime("%d/%m/%y %H:%M:%S")
-
-        chart = (
-            alt.Chart(df)
-            .mark_line(point=True)
-            .encode(
-                x=alt.X(
-                    "timestamp:T",
-                    title="Fecha y hora",
-                    axis=alt.Axis(
-                        format="%d/%m/%y %H:%M:%S",
-                        grid=True,
-                        gridColor="#cccccc",
-                        gridOpacity=0.6,
-                    ),
-                ),
-                y=alt.Y(
-                    "valor:Q",
-                    title="Presión (kg/cm²)",
-                    axis=alt.Axis(
-                        grid=True,
-                        gridColor="#cccccc",
-                        gridOpacity=0.6,
-                    ),
-                ),
-                color=alt.Color(
-                    "dispositivo:N",
-                    legend=alt.Legend(orient="bottom", title="Sector"),
-                ),
-                tooltip=[
-                    alt.Tooltip("dispositivo:N", title="Sector"),
-                    alt.Tooltip("fecha_str:N", title="Fecha y hora"),
-                    alt.Tooltip("valor:Q", title="Presión", format=".2f"),
-                ],
-            )
-            .interactive()
-        )
-
-        st.altair_chart(chart, use_container_width=True)
+    st.altair_chart(chart, use_container_width=True)
