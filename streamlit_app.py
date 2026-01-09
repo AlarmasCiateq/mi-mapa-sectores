@@ -68,28 +68,24 @@ if "vista_actual" not in st.session_state:
 
 col1, col2 = st.columns(2)
 
-if st.session_state.vista_actual != "interactivo":
-    with col1:
-        if st.button("⏱ Ir al mapa en tiempo real"):
-            st.session_state.vista_actual = "interactivo"
-            st.rerun()
+with col1:
+    if st.button("⏱ Mapa tiempo real"):
+        st.session_state.vista_actual = "interactivo"
+        st.rerun()
 
-if st.session_state.vista_actual != "historico":
-    with col2:
-        if st.button("🎬 Ir a evolución histórica"):
-            st.session_state.vista_actual = "historico"
-            st.rerun()
+with col2:
+    if st.button("🎬 Evolución histórica"):
+        st.session_state.vista_actual = "historico"
+        st.rerun()
 
-if st.session_state.vista_actual != "analisis":
-    with col1:
-        if st.button("📊 Ir a análisis de datos"):
-            st.session_state.vista_actual = "analisis"
-            st.rerun()
+if st.button("📊 Análisis de datos"):
+    st.session_state.vista_actual = "analisis"
+    st.rerun()
 
 st.divider()
 
 # ==============================
-# VISTA 1: MAPA EN TIEMPO REAL
+# VISTA 1: MAPA
 # ==============================
 if st.session_state.vista_actual == "interactivo":
 
@@ -112,7 +108,7 @@ if st.session_state.vista_actual == "interactivo":
 
     geojson_path = "data/geojson/sector_hidraulico.geojson"
     if not os.path.exists(geojson_path):
-        st.error("❌ GeoJSON no encontrado")
+        st.error("GeoJSON no encontrado")
         st.stop()
 
     with open(geojson_path, encoding="utf-8") as f:
@@ -162,7 +158,7 @@ if st.session_state.vista_actual == "interactivo":
     st_folium(m, width="100%", height=550)
 
 # ==============================
-# VISTA 2: EVOLUCIÓN HISTÓRICA (VIDEO)
+# VISTA 2: VIDEO
 # ==============================
 elif st.session_state.vista_actual == "historico":
 
@@ -199,11 +195,11 @@ elif st.session_state.vista_actual == "historico":
     )
 
 # ==============================
-# VISTA 3: ANÁLISIS DE DATOS
+# VISTA 3: ANÁLISIS (FIX REAL)
 # ==============================
 else:
 
-    st.subheader("📊 Análisis Histórico de Presión (Últimas 24 h)")
+    st.subheader("📊 Presión – últimas 24 h")
 
     @st.cache_data(ttl=300)
     def cargar_datos():
@@ -220,7 +216,13 @@ else:
                 conn,
             )
 
-        df["timestamp"] = pd.to_datetime(df["timestamp"])
+        df["timestamp"] = pd.to_datetime(
+            df["timestamp"],
+            format="%d-%m-%Y %H:%M",
+            errors="coerce"
+        )
+
+        df = df.dropna(subset=["timestamp"])
         return df
 
     df = cargar_datos()
@@ -244,14 +246,10 @@ else:
         alt.Chart(df)
         .mark_line(point=True)
         .encode(
-            x=alt.X("timestamp:T", title="Hora"),
+            x=alt.X("timestamp:T", title="Fecha y hora"),
             y=alt.Y("valor:Q", title="Presión (kg/cm²)"),
-            color=alt.Color(
-                "dispositivo:N",
-                legend=alt.Legend(orient="bottom"),
-            ),
+            color=alt.Color("dispositivo:N", legend=alt.Legend(orient="bottom")),
             tooltip=[
-                "dispositivo:N",
                 alt.Tooltip("timestamp:T", title="Fecha"),
                 alt.Tooltip("valor:Q", format=".2f"),
             ],
