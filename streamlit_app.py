@@ -28,12 +28,12 @@ ESTADO_JSON_URL = (
 DB_URL = "https://github.com/AlarmasCiateq/mi-mapa-sectores/releases/download/latest/hidro_datos.db"
 
 # ==============================
-# CONFIG STREAMLIT
+# CONFIG STREAMLIT (RESPONSIVO)
 # ==============================
 st.set_page_config(
     page_title="Sectores Hidráulicos CIATEQ",
     page_icon="💧",
-    layout="centered"
+    layout="wide"
 )
 
 # ==============================
@@ -115,7 +115,7 @@ if st.session_state.vista_actual == "interactivo":
             icon=folium.DivIcon(html=f"<b>{valor:.2f}</b>")
         ).add_to(m)
 
-    st_folium(m, width="100%", height=550)
+    st_folium(m, width="100%", height=650)
 
 # ==============================
 # VISTA 2: ANÁLISIS DE DATOS
@@ -174,6 +174,7 @@ else:
             ),
             y=alt.Y(
                 "valor:Q",
+                title="Presión (kg/cm²)",
                 axis=alt.Axis(
                     grid=True,
                     gridColor="#b0b0b0",
