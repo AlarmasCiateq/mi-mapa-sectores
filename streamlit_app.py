@@ -223,24 +223,52 @@ else:
 
     @st.cache_data(ttl=300)
     def descargar_db():
-        r = requests.get(DB_URL, timeout=10)
-        r.raise_for_status()
-        with open("temp_db.db", "wb") as f:
-            f.write(r.content)
-        return "temp_db.db"
+        headers = {
+            "Accept": "application/octet-stream",
+            "User-Agent": "streamlit-app"
+        }
 
-    db_path = descargar_db()
+        r = requests.get(DB_URL, headers=headers, timeout=15)
+
+        if r.status_code != 200:
+            raise RuntimeError(f"Error al descargar BD ({r.status_code})")
+
+        db_path = "temp_db.db"
+        with open(db_path, "wb") as f:
+            f.write(r.content)
+
+        return db_path
+
+    try:
+        db_path = descargar_db()
+    except Exception as e:
+        st.error(f"❌ No se pudo descargar la base de datos:\n{e}")
+        st.stop()
 
     with sqlite3.connect(db_path) as conn:
-        dispositivos = pd.read_sql("SELECT DISTINCT dispositivo FROM lecturas", conn)["dispositivo"].tolist()
+        dispositivos = pd.read_sql(
+            "SELECT DISTINCT dispositivo FROM lecturas",
+            conn
+        )["dispositivo"].tolist()
 
-    dispositivos_sel = st.multiselect("Sectores", dispositivos, default=dispositivos[:3])
+    dispositivos_sel = st.multiselect(
+        "Sectores",
+        dispositivos,
+        default=dispositivos[:3]
+    )
 
     if st.button("🔄 Cargar"):
         with sqlite3.connect(db_path) as conn:
-            df = pd.read_sql("SELECT * FROM lecturas", conn)
+            df = pd.read_sql(
+                "SELECT * FROM lecturas",
+                conn
+            )
 
-        df["fecha_datetime"] = pd.to_datetime(df["timestamp"], format="%d-%m-%Y %H:%M")
+        df["fecha_datetime"] = pd.to_datetime(
+            df["timestamp"],
+            format="%d-%m-%Y %H:%M"
+        )
+
         df = df[df["dispositivo"].isin(dispositivos_sel)]
 
         chart = alt.Chart(df).mark_line().encode(
@@ -250,5 +278,7 @@ else:
         ).interactive()
 
         st.altair_chart(chart, use_container_width=True)
+
+
 
 
