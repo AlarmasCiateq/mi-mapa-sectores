@@ -3,7 +3,7 @@ import streamlit as st
 import folium
 import json
 import requests
-from datetime import date, timedelta, datetime, timezone
+from datetime import date, timedelta, datetime
 from folium.plugins import Fullscreen
 from streamlit_folium import st_folium
 from streamlit_autorefresh import st_autorefresh
@@ -25,7 +25,7 @@ ESTADO_JSON_URL = (
     f"https://raw.githubusercontent.com/{GITHUB_USER}/{REPO_NAME}/{BRANCH}/data/estado_sectores.json"
 )
 
-DB_URL = "https://github.com/AlarmasCiateq/mi-mapa-sectores/releases/download/latest/hidro_datos.db"
+DB_URL = f"https://github.com/{GITHUB_USER}/{REPO_NAME}/releases/download/latest/hidro_datos.db"
 
 # --- CONFIGURACIÓN ---
 st.set_page_config(
@@ -231,28 +231,27 @@ else:
         with open(db_path, "wb") as f:
             f.write(r.content)
 
-        # Obtener fecha de subida (UTC -> UTC-6)
-        last_modified = r.headers.get("Last-Modified", "Desconocida")
-        if last_modified != "Desconocida":
-            try:
-                last_modified_dt = datetime.strptime(last_modified, "%a, %d %b %Y %H:%M:%S %Z")
-                last_modified_dt = last_modified_dt.replace(tzinfo=timezone.utc) - timedelta(hours=6)
-                last_modified_str = last_modified_dt.strftime("%d/%m/%Y %H:%M:%S")
-            except:
-                last_modified_str = last_modified
-        else:
-            last_modified_str = last_modified
+        # Mostrar fecha de la BD descargada
+        st.info(f"Base de datos tomada de GitHub Release. Fecha de descarga: {datetime.utcnow().strftime('%d/%m/%Y %H:%M UTC')}")
 
-        return db_path, last_modified_str
+        return db_path
 
-    db_path, db_fecha = descargar_db()
-    st.text(f"Base de datos tomada de GitHub Release (hora local UTC-6): {db_fecha}")
+    db_path = descargar_db()
 
-    with sqlite3.connect(db_path) as conn:
-        dispositivos = pd.read_sql(
-            "SELECT DISTINCT dispositivo FROM lecturas",
-            conn
-        )["dispositivo"].tolist()
+    def cargar_datos():
+        with sqlite3.connect(db_path) as conn:
+            df = pd.read_sql("SELECT * FROM lecturas ORDER BY id ASC", conn)
+
+        # Convertir timestamp a datetime seguro
+        df["timestamp"] = pd.to_datetime(df["timestamp"], format="%d-%m-%Y %H:%M", errors="coerce")
+        df = df.sort_values("id")
+        df["timestamp"] = df["timestamp"].fillna(method="ffill")
+
+        return df
+
+    df = cargar_datos()
+
+    dispositivos = df["dispositivo"].unique().tolist()
 
     dispositivos_sel = st.multiselect(
         "Sectores",
@@ -260,32 +259,28 @@ else:
         default=dispositivos[:3]
     )
 
+    # Botón de carga
     if st.button("🔄 Cargar"):
 
-        def cargar_datos():
-            with sqlite3.connect(db_path) as conn:
-                df = pd.read_sql(
-                    "SELECT * FROM lecturas ORDER BY id ASC",
-                    conn
-                )
-            df["timestamp"] = pd.to_datetime(df["timestamp"])
-            return df
+        df_sel = df[df["dispositivo"].isin(dispositivos_sel)]
 
-        df = cargar_datos()
-        df = df[df["dispositivo"].isin(dispositivos_sel)]
+        # Definir rango de 24 horas desde ahora o último dato
+        if not df_sel.empty:
+            ultima_fecha = df_sel["timestamp"].max()
+            inicio = ultima_fecha - pd.Timedelta(days=1)
+            df_vis = df_sel[df_sel["timestamp"] >= inicio]
+        else:
+            df_vis = df_sel
 
-        # Último dato disponible
-        ultimo = df["timestamp"].max()
-        inicio_visible = ultimo - timedelta(hours=24)
+        df_vis["fecha_str"] = df_vis["timestamp"].dt.strftime("%d/%m/%y %H:%M:%S")
 
         chart = (
-            alt.Chart(df)
+            alt.Chart(df_vis)
             .mark_line(point=True)
             .encode(
                 x=alt.X(
                     "timestamp:T",
                     title="Fecha y hora",
-                    scale=alt.Scale(domain=[inicio_visible, ultimo]),
                     axis=alt.Axis(
                         format="%d/%m/%y %H:%M:%S",
                         grid=True,
@@ -302,10 +297,10 @@ else:
                         gridOpacity=0.6
                     )
                 ),
-                color=alt.Color("dispositivo:N", legend=alt.Legend(orient="bottom")),
+                color=alt.Color("dispositivo:N", legend=alt.Legend(title="Sector", orient="bottom")),
                 tooltip=[
                     alt.Tooltip("dispositivo:N", title="Sector"),
-                    alt.Tooltip("timestamp:T", title="Fecha", format="%d/%m/%y %H:%M:%S"),
+                    alt.Tooltip("fecha_str:N", title="Fecha"),
                     alt.Tooltip("valor:Q", title="Presión", format=".2f")
                 ]
             )
