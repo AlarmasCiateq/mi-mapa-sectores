@@ -1,0 +1,12 @@
+{
+  "Sector A": {
+    "valor": 2.1,
+    "timestamp": "09-01-2026 08:20",
+    "rssi": -65
+  },
+  "Sector B": {
+    "valor": 1.4,
+    "timestamp": "09-01-2026 08:20",
+    "rssi": -70
+  }
+}
