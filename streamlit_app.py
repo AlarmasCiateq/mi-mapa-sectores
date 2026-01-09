@@ -268,9 +268,22 @@ else:
                 x=alt.X(
                     "fecha:T",
                     title="Fecha y hora",
-                    axis=alt.Axis(format="%d/%m/%y\n%H:%M:%S", labelAngle=0)
+                    axis=alt.Axis(
+                        format="%d/%m/%y %H:%M:%S",
+                        grid=True,
+                        gridColor="#cccccc",
+                        gridOpacity=0.6
+                    )
                 ),
-                y=alt.Y("valor:Q", title="Presión (kg/cm²)"),
+                y=alt.Y(
+                    "valor:Q",
+                    title="Presión (kg/cm²)",
+                    axis=alt.Axis(
+                        grid=True,
+                        gridColor="#cccccc",
+                        gridOpacity=0.6
+                    )
+                ),
                 color="dispositivo:N",
                 tooltip=[
                     alt.Tooltip("dispositivo:N", title="Sector"),
