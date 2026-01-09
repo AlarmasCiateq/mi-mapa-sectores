@@ -27,7 +27,7 @@ ESTADO_JSON_URL = (
 
 DB_URL = "https://github.com/AlarmasCiateq/mi-mapa-sectores/releases/download/latest/hidro_datos.db"
 
-# --- CONFIGURACIÓN ÚNICA (DEBE SER LA PRIMERA) ---
+# --- CONFIGURACIÓN ÚNICA ---
 st.set_page_config(
     page_title="Sectores Hidráulicos CIATEQ",
     page_icon="💧",
@@ -55,7 +55,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --- BOTÓN DE NAVEGACIÓN CONTEXTUAL (3 VISTAS) ---
+# --- NAVEGACIÓN ---
 if "vista_actual" not in st.session_state:
     st.session_state.vista_actual = "interactivo"
 
@@ -221,17 +221,13 @@ else:
 
     st.subheader("📊 Análisis Histórico de Presión en Sectores")
 
+    alt.themes.enable("default")
+
     @st.cache_data(ttl=300)
     def descargar_db():
-        headers = {
-            "Accept": "application/octet-stream",
-            "User-Agent": "streamlit-app"
-        }
-
-        r = requests.get(DB_URL, headers=headers, timeout=15)
-
+        r = requests.get(DB_URL, timeout=15)
         if r.status_code != 200:
-            raise RuntimeError(f"Error al descargar BD ({r.status_code})")
+            raise RuntimeError("Error al descargar BD")
 
         db_path = "temp_db.db"
         with open(db_path, "wb") as f:
@@ -239,11 +235,7 @@ else:
 
         return db_path
 
-    try:
-        db_path = descargar_db()
-    except Exception as e:
-        st.error(f"❌ No se pudo descargar la base de datos:\n{e}")
-        st.stop()
+    db_path = descargar_db()
 
     with sqlite3.connect(db_path) as conn:
         dispositivos = pd.read_sql(
@@ -259,10 +251,7 @@ else:
 
     if st.button("🔄 Cargar"):
         with sqlite3.connect(db_path) as conn:
-            df = pd.read_sql(
-                "SELECT * FROM lecturas",
-                conn
-            )
+            df = pd.read_sql("SELECT * FROM lecturas", conn)
 
         df["fecha_datetime"] = pd.to_datetime(
             df["timestamp"],
@@ -271,14 +260,25 @@ else:
 
         df = df[df["dispositivo"].isin(dispositivos_sel)]
 
-        chart = alt.Chart(df).mark_line().encode(
-            x="fecha_datetime:T",
-            y="valor:Q",
-            color="dispositivo:N"
-        ).interactive()
+        chart = (
+            alt.Chart(df)
+            .mark_line(point=True)
+            .encode(
+                x=alt.X(
+                    "fecha_datetime:T",
+                    title="Fecha y hora",
+                    axis=alt.Axis(format="%d-%m-%Y %H:%M")
+                ),
+                y=alt.Y("valor:Q", title="Presión (kg/cm²)"),
+                color=alt.Color("dispositivo:N", title="Sector"),
+                tooltip=[
+                    alt.Tooltip("dispositivo:N", title="Sector"),
+                    alt.Tooltip("fecha_datetime:T", title="Fecha"),
+                    alt.Tooltip("valor:Q", title="Presión", format=".2f")
+                ]
+            )
+            .interactive()
+            .properties(locale="es-ES")
+        )
 
         st.altair_chart(chart, use_container_width=True)
-
-
-
-
