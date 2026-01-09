@@ -230,11 +230,21 @@ else:
     @st.cache_data(ttl=300)
     def cargar_datos_release():
         db_path = "temp_db_release.db"
-        # Descargar base de datos del release
         r = requests.get(DB_URL, timeout=15)
         r.raise_for_status()
         with open(db_path, "wb") as f:
             f.write(r.content)
+
+        # Obtener fecha de última modificación desde headers
+        last_modified = r.headers.get("Last-Modified", "Desconocida")
+        if last_modified != "Desconocida":
+            try:
+                last_modified_dt = datetime.strptime(last_modified, "%a, %d %b %Y %H:%M:%S %Z")
+                last_modified_str = last_modified_dt.strftime("%d/%m/%Y %H:%M:%S")
+            except:
+                last_modified_str = last_modified
+        else:
+            last_modified_str = last_modified
 
         with sqlite3.connect(db_path) as conn:
             df = pd.read_sql(
@@ -244,9 +254,10 @@ else:
 
         df["timestamp"] = pd.to_datetime(df["timestamp"], format="%d-%m-%Y %H:%M", errors="coerce")
         df = df.dropna(subset=["timestamp"])
-        return df
 
-    df_all = cargar_datos_release()
+        return df, last_modified_str
+
+    df_all, db_last_mod = cargar_datos_release()
 
     dispositivos = sorted(df_all["dispositivo"].unique())
 
@@ -299,3 +310,5 @@ else:
         )
 
         st.altair_chart(chart, use_container_width=True)
+
+        st.markdown(f"**Última actualización de base de datos:** {db_last_mod}")
