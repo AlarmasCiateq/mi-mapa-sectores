@@ -31,7 +31,7 @@ DB_URL = "https://github.com/AlarmasCiateq/mi-mapa-sectores/releases/download/la
 st.set_page_config(
     page_title="Sectores Hidráulicos CIATEQ",
     page_icon="💧",
-    layout="centered"
+    layout="wide"   # ← CAMBIO 1 (responsivo en PC)
 )
 
 # --- MARCA DE AGUA ---
@@ -288,7 +288,10 @@ else:
                         gridOpacity=0.6
                     )
                 ),
-                color="dispositivo:N",
+                color=alt.Color(
+                    "dispositivo:N",
+                    legend=alt.Legend(orient="bottom")  # ← CAMBIO 2
+                ),
                 tooltip=[
                     alt.Tooltip("dispositivo:N", title="Sector"),
                     alt.Tooltip("fecha_str:N", title="Fecha"),
