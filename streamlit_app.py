@@ -131,82 +131,128 @@ if st.session_state.vista_actual == "interactivo":
 # ==============================
 else:
 
-    st.subheader("📊 Análisis histórico")
+    st.subheader("📊 Análisis Histórico de Presión en Sectores")
 
     @st.cache_data(ttl=300)
-@st.cache_data(ttl=300)
-def descargar_db():
-    r = requests.get(DB_RELEASE_URL, timeout=15)
-    if r.status_code != 200:
-        raise RuntimeError("Error al obtener info de la release")
+    def descargar_db():
+        # Obtener info de la release
+        r = requests.get(DB_RELEASE_URL, timeout=15)
+        if r.status_code != 200:
+            raise RuntimeError("Error al obtener info de la Release")
 
-    release_info = r.json()
+        release_info = r.json()
 
-    asset = next(
-        a for a in release_info["assets"]
-        if a["name"] == "sectores.db"
-    )
+        # Buscar SIEMPRE el asset correcto
+        asset = next(
+            a for a in release_info["assets"]
+            if a["name"] == "sectores.db"
+        )
 
-    fecha_github_utc = asset["updated_at"]
-    fecha_github = (
-        datetime.strptime(fecha_github_utc, "%Y-%m-%dT%H:%M:%SZ")
-        + HORA_MEXICO
-    )
+        # Fecha real del archivo (no de descarga)
+        fecha_github_utc = asset["updated_at"]
+        fecha_github = (
+            datetime.strptime(fecha_github_utc, "%Y-%m-%dT%H:%M:%SZ")
+            + HORA_MEXICO
+        )
 
-    r_file = requests.get(asset["browser_download_url"], timeout=30)
+        # Descargar archivo
+        r_file = requests.get(asset["browser_download_url"], timeout=30)
 
-    db_path = "temp_db.db"
-    with open(db_path, "wb") as f:
-        f.write(r_file.content)
+        db_path = "temp_db.db"
+        with open(db_path, "wb") as f:
+            f.write(r_file.content)
 
-    st.info(
-        f"Base de datos tomada de GitHub Release. "
-        f"Última actualización del archivo (México GMT-6): "
-        f"{fecha_github.strftime('%d/%m/%Y %H:%M')}"
-    )
+        st.info(
+            "Base de datos tomada de GitHub Release. "
+            "Última actualización del archivo (México GMT-6): "
+            f"{fecha_github.strftime('%d/%m/%Y %H:%M')}"
+        )
 
-    return db_path
-
+        return db_path
 
     db_path = descargar_db()
 
-    with sqlite3.connect(db_path) as conn:
-        df = pd.read_sql("SELECT * FROM lecturas ORDER BY id ASC", conn)
+    def cargar_datos():
+        with sqlite3.connect(db_path) as conn:
+            df = pd.read_sql(
+                "SELECT * FROM lecturas ORDER BY id ASC",
+                conn
+            )
 
-    # timestamp como texto → datetime
-    df["timestamp"] = pd.to_datetime(
-        df["timestamp"],
-        format="%d-%m-%Y %H:%M",
-        errors="coerce"
-    ) + HORA_MEXICO
+        # Timestamp como texto -> datetime seguro
+        df["timestamp"] = pd.to_datetime(
+            df["timestamp"],
+            format="%d-%m-%Y %H:%M",
+            errors="coerce"
+        )
 
-    dispositivos = sorted(df["dispositivo"].unique())
+        # Rellenar posibles huecos sin romper orden
+        df["timestamp"] = df["timestamp"].fillna(method="ffill")
 
-    seleccion = st.multiselect(
+        return df
+
+    df = cargar_datos()
+
+    dispositivos = df["dispositivo"].unique().tolist()
+
+    dispositivos_sel = st.multiselect(
         "Sectores",
         dispositivos,
         default=dispositivos[:3]
     )
 
-    df_sel = df[df["dispositivo"].isin(seleccion)]
+    if st.button("🔄 Cargar"):
 
-    if df_sel.empty:
-        st.warning("No hay datos")
-        st.stop()
+        df_sel = df[df["dispositivo"].isin(dispositivos_sel)]
 
-    ultima = df_sel["timestamp"].max()
-    inicio_24h = ultima - pd.Timedelta(hours=24)
+        if not df_sel.empty:
+            # Último dato REAL
+            ultima_fecha = df_sel["timestamp"].max()
 
-    base = alt.Chart(df_sel).mark_line().encode(
-        x=alt.X(
-            "timestamp:T",
-            scale=alt.Scale(domain=[inicio_24h, ultima]),
-            title="Tiempo"
-        ),
-        y=alt.Y("valor:Q", title="Presión (kg/cm²)"),
-        color=alt.Color("dispositivo:N", title="Sector"),
-        tooltip=["dispositivo", "valor", "timestamp"]
-    ).interactive()
+            # Ventana visible de 24 horas hacia atrás
+            inicio_visible = ultima_fecha - pd.Timedelta(days=1)
 
-    st.altair_chart(base, use_container_width=True)
+            df_visible = df_sel[df_sel["timestamp"] >= inicio_visible]
+        else:
+            df_visible = df_sel
+
+        df_visible["fecha_str"] = df_visible["timestamp"].dt.strftime(
+            "%d/%m/%y %H:%M:%S"
+        )
+
+        chart = (
+            alt.Chart(df_visible)
+            .mark_line(point=True)
+            .encode(
+                x=alt.X(
+                    "timestamp:T",
+                    title="Fecha y hora",
+                    axis=alt.Axis(
+                        format="%d/%m/%y %H:%M:%S",
+                        grid=True
+                    )
+                ),
+                y=alt.Y(
+                    "valor:Q",
+                    title="Presión (kg/cm²)",
+                    axis=alt.Axis(grid=True)
+                ),
+                color=alt.Color(
+                    "dispositivo:N",
+                    legend=alt.Legend(
+                        title="Sector",
+                        orient="bottom"
+                    )
+                ),
+                tooltip=[
+                    alt.Tooltip("dispositivo:N", title="Sector"),
+                    alt.Tooltip("fecha_str:N", title="Fecha"),
+                    alt.Tooltip("valor:Q", title="Presión", format=".2f")
+                ]
+            )
+            .interactive()
+        )
+
+        st.altair_chart(chart, use_container_width=True)
+
 
