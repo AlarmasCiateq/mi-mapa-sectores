@@ -304,8 +304,8 @@ else:
             f.write(r_file.content)
 
         st.info(
-            "Base de datos tomada de GitHub Release. "
-            f"Última actualización del archivo (México GMT-6): "
+            "Última actualización de Base de datos "
+            f"(México GMT-6): "
             f"{fecha_github.strftime('%d/%m/%Y %H:%M')}"
         )
 
@@ -385,3 +385,4 @@ else:
         )
 
         st.altair_chart(chart, use_container_width=True)
+
