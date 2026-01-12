@@ -134,26 +134,39 @@ else:
     st.subheader("📊 Análisis histórico")
 
     @st.cache_data(ttl=300)
-    def descargar_db():
-        r = requests.get(DB_RELEASE_API, timeout=15)
-        info = r.json()
+@st.cache_data(ttl=300)
+def descargar_db():
+    r = requests.get(DB_RELEASE_URL, timeout=15)
+    if r.status_code != 200:
+        raise RuntimeError("Error al obtener info de la release")
 
-        asset = info["assets"][0]
-        fecha_subida = datetime.strptime(
-            asset["updated_at"], "%Y-%m-%dT%H:%M:%SZ"
-        ) + HORA_MEXICO
+    release_info = r.json()
 
-        r_db = requests.get(DB_DOWNLOAD_URL, timeout=15)
-        db_path = "temp.db"
-        with open(db_path, "wb") as f:
-            f.write(r_db.content)
+    asset = next(
+        a for a in release_info["assets"]
+        if a["name"] == "sectores.db"
+    )
 
-        st.info(
-            f"📦 BD desde GitHub Release | "
-            f"Última subida (México): {fecha_subida.strftime('%d/%m/%Y %H:%M')}"
-        )
+    fecha_github_utc = asset["updated_at"]
+    fecha_github = (
+        datetime.strptime(fecha_github_utc, "%Y-%m-%dT%H:%M:%SZ")
+        + HORA_MEXICO
+    )
 
-        return db_path
+    r_file = requests.get(asset["browser_download_url"], timeout=30)
+
+    db_path = "temp_db.db"
+    with open(db_path, "wb") as f:
+        f.write(r_file.content)
+
+    st.info(
+        f"Base de datos tomada de GitHub Release. "
+        f"Última actualización del archivo (México GMT-6): "
+        f"{fecha_github.strftime('%d/%m/%Y %H:%M')}"
+    )
+
+    return db_path
+
 
     db_path = descargar_db()
 
@@ -196,3 +209,4 @@ else:
     ).interactive()
 
     st.altair_chart(base, use_container_width=True)
+
