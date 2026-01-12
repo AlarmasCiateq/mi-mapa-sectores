@@ -175,6 +175,105 @@ if st.session_state.vista_actual == "interactivo":
 
     st_folium(m, width="100%", height=550)
 
+# # ==============================
+# # VISTA 3: ANÁLISIS DE DATOS
+# # ==============================
+# else:
+
+#     st.subheader("📊 Análisis Histórico de Presión en Sectores")
+
+#     @st.cache_data(ttl=300)
+#     def descargar_db():
+#         r = requests.get(DB_RELEASE_URL, timeout=15)
+#         r.raise_for_status()
+#         release_info = r.json()
+
+#         asset = release_info["assets"][0]
+#         fecha_github = (
+#             datetime.strptime(asset["updated_at"], "%Y-%m-%dT%H:%M:%SZ")
+#             + HORA_MEXICO
+#         )
+
+#         r_file = requests.get(asset["browser_download_url"], timeout=15)
+#         db_path = "temp_db.db"
+#         with open(db_path, "wb") as f:
+#             f.write(r_file.content)
+
+#         st.info(
+#             f"Base de datos tomada de GitHub Release. "
+#             f"Fecha de subida (México GMT-6): {fecha_github.strftime('%d/%m/%Y %H:%M')}"
+#         )
+
+#         return db_path
+
+#     db_path = descargar_db()
+
+#     def cargar_datos():
+#         with sqlite3.connect(db_path) as conn:
+#             df = pd.read_sql(
+#                 "SELECT * FROM lecturas ORDER BY id ASC",
+#                 conn
+#             )
+
+#         df["timestamp"] = pd.to_datetime(
+#             df["timestamp"],
+#             errors="coerce"
+#         ) + HORA_MEXICO
+
+#         df = df.dropna(subset=["timestamp"])
+#         return df
+
+#     df = cargar_datos()
+
+#     dispositivos = df["dispositivo"].unique().tolist()
+
+#     dispositivos_sel = st.multiselect(
+#         "Sectores",
+#         dispositivos,
+#         default=dispositivos[:3]
+#     )
+
+#     if st.button("🔄 Cargar"):
+
+#         df_sel = df[df["dispositivo"].isin(dispositivos_sel)]
+
+#         if not df_sel.empty:
+#             ultima = df_sel["timestamp"].max()
+#             inicio = ultima - pd.Timedelta(hours=24)
+#         else:
+#             ultima = None
+#             inicio = None
+
+#         df_sel["fecha_str"] = df_sel["timestamp"].dt.strftime("%d/%m/%Y %H:%M:%S")
+
+#         chart = (
+#             alt.Chart(df_sel)
+#             .mark_line(point=True)
+#             .encode(
+#                 x=alt.X(
+#                     "timestamp:T",
+#                     title="Fecha y hora",
+#                     scale=alt.Scale(domain=[inicio, ultima])
+#                 ),
+#                 y=alt.Y(
+#                     "valor:Q",
+#                     title="Presión (kg/cm²)"
+#                 ),
+#                 color=alt.Color(
+#                     "dispositivo:N",
+#                     legend=alt.Legend(title="Sector", orient="bottom")
+#                 ),
+#                 tooltip=[
+#                     alt.Tooltip("dispositivo:N", title="Sector"),
+#                     alt.Tooltip("fecha_str:N", title="Fecha"),
+#                     alt.Tooltip("valor:Q", title="Presión", format=".2f")
+#                 ]
+#             )
+#             .interactive()
+#         )
+
+#         st.altair_chart(chart, use_container_width=True)
+
 # ==============================
 # VISTA 3: ANÁLISIS DE DATOS
 # ==============================
@@ -188,20 +287,26 @@ else:
         r.raise_for_status()
         release_info = r.json()
 
-        asset = release_info["assets"][0]
+        # Buscar EXPLÍCITAMENTE el archivo correcto
+        asset = next(
+            a for a in release_info["assets"]
+            if a["name"] == "sectores.db"
+        )
+
         fecha_github = (
             datetime.strptime(asset["updated_at"], "%Y-%m-%dT%H:%M:%SZ")
             + HORA_MEXICO
         )
 
-        r_file = requests.get(asset["browser_download_url"], timeout=15)
+        r_file = requests.get(asset["browser_download_url"], timeout=30)
         db_path = "temp_db.db"
         with open(db_path, "wb") as f:
             f.write(r_file.content)
 
         st.info(
-            f"Base de datos tomada de GitHub Release. "
-            f"Fecha de subida (México GMT-6): {fecha_github.strftime('%d/%m/%Y %H:%M')}"
+            "Base de datos tomada de GitHub Release. "
+            f"Última actualización del archivo (México GMT-6): "
+            f"{fecha_github.strftime('%d/%m/%Y %H:%M')}"
         )
 
         return db_path
@@ -215,10 +320,12 @@ else:
                 conn
             )
 
+        # El timestamp YA está en hora local → no volver a moverlo
         df["timestamp"] = pd.to_datetime(
             df["timestamp"],
+            format="%d-%m-%Y %H:%M",
             errors="coerce"
-        ) + HORA_MEXICO
+        )
 
         df = df.dropna(subset=["timestamp"])
         return df
@@ -244,7 +351,9 @@ else:
             ultima = None
             inicio = None
 
-        df_sel["fecha_str"] = df_sel["timestamp"].dt.strftime("%d/%m/%Y %H:%M:%S")
+        df_sel["fecha_str"] = df_sel["timestamp"].dt.strftime(
+            "%d/%m/%Y %H:%M:%S"
+        )
 
         chart = (
             alt.Chart(df_sel)
@@ -261,7 +370,10 @@ else:
                 ),
                 color=alt.Color(
                     "dispositivo:N",
-                    legend=alt.Legend(title="Sector", orient="bottom")
+                    legend=alt.Legend(
+                        title="Sector",
+                        orient="bottom"
+                    )
                 ),
                 tooltip=[
                     alt.Tooltip("dispositivo:N", title="Sector"),
