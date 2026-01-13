@@ -174,7 +174,47 @@ if st.session_state.vista_actual == "interactivo":
         ).add_to(m)
 
     st_folium(m, width="100%", height=550)
+    
+# ==============================
+# VISTA 2: EVOLUCIÓN HISTÓRICA
+# ==============================
+elif st.session_state.vista_actual == "historico":
 
+    st.subheader("💧 Evolución de Presión en Sectores Hidráulicos")
+
+    @st.cache_data(ttl=3600)
+    def obtener_fechas_disponibles():
+        fechas = []
+        hoy = date.today()
+        for i in range(60):
+            f = hoy - timedelta(days=i)
+            url = f"https://{GITHUB_USER}.github.io/{REPO_NAME}/hidro-videos/presion_{f}.mp4"
+            try:
+                if requests.head(url, timeout=3).status_code == 200:
+                    fechas.append(f)
+            except:
+                pass
+        return fechas
+
+    fechas = obtener_fechas_disponibles()
+    if not fechas:
+        st.warning("⚠️ No hay videos disponibles.")
+        st.stop()
+
+    seleccion = st.selectbox(
+        "Selecciona un día:",
+        options=fechas,
+        format_func=lambda f: f.strftime("%d-%m-%Y")
+    )
+
+    video_url = f"https://{GITHUB_USER}.github.io/{REPO_NAME}/hidro-videos/presion_{seleccion}.mp4"
+
+    st.markdown(
+        f"""
+        <video src="{video_url}" controls style="width:100%; border-radius:8px;"></video>
+        """,
+        unsafe_allow_html=True
+    )
 # # ==============================
 # # VISTA 3: ANÁLISIS DE DATOS
 # # ==============================
@@ -385,4 +425,5 @@ else:
         )
 
         st.altair_chart(chart, use_container_width=True)
+
 
