@@ -753,29 +753,35 @@ else:
         r = requests.get(DB_RELEASE_URL, timeout=15)
         r.raise_for_status()
         release_info = r.json()
-
+    
+        # 🔹 NUEVO: verificar que haya assets
+        assets = release_info.get("assets", [])
+        if not assets:
+            st.error("⚠️ No hay archivos en la Release de GitHub. Espera a que el monitor suba los datos.")
+            st.stop()
+    
         # Buscar EXPLÍCITAMENTE el archivo correcto
         asset = next(
-            a for a in release_info["assets"]
+            a for a in assets
             if a["name"] == "sectores.db"
         )
-
+    
         fecha_github = (
             datetime.strptime(asset["updated_at"], "%Y-%m-%dT%H:%M:%SZ")
             + HORA_MEXICO
         )
-
+    
         r_file = requests.get(asset["browser_download_url"], timeout=30)
         db_path = "temp_db.db"
         with open(db_path, "wb") as f:
             f.write(r_file.content)
-
+    
         st.info(
             "Última actualización de Base de datos "
             f"(México GMT-6): "
             f"{fecha_github.strftime('%d/%m/%Y %H:%M')}"
         )
-
+    
         return db_path
 
     db_path = descargar_db()
@@ -852,6 +858,7 @@ else:
         )
 
         st.altair_chart(chart, use_container_width=True)
+
 
 
 
