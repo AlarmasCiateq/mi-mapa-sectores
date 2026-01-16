@@ -140,37 +140,37 @@ if st.session_state.vista_actual == "interactivo":
     #         json_resp.raise_for_status()
     #         return json_resp.json()
 
-        def cargar_estado_desde_github():
-            # Si ya tenemos un estado válido guardado, empezamos con ese
-            estado_previo = st.session_state.get("estado_sectores_cache", {})
-        
-            try:
-                # Obtener la release más reciente
-                r = requests.get(
-                    f"https://api.github.com/repos/{GITHUB_USER}/{REPO_NAME}/releases/latest",
-                    timeout=10
-                )
-                r.raise_for_status()
-                release = r.json()
-        
-                # Buscar el asset "estado_sectores.json"
-                asset = next((a for a in release["assets"] if a["name"] == "estado_sectores.json"), None)
-                if not asset:
-                    # No hay JSON en la Release → mantener el estado previo y no mostrar error
-                    return estado_previo
-        
-                # Descargar el JSON
-                json_resp = requests.get(asset["browser_download_url"], timeout=10)
-                json_resp.raise_for_status()
-                nuevo_estado = json_resp.json()
-        
-                # Guardar en caché el nuevo estado válido
-                st.session_state["estado_sectores_cache"] = nuevo_estado
-                return nuevo_estado
-        
-            except Exception as e:
-                # Error en la descarga → mantener el estado previo y no mostrar advertencia
+    def cargar_estado_desde_github():
+        # Si ya tenemos un estado válido guardado, empezamos con ese
+        estado_previo = st.session_state.get("estado_sectores_cache", {})
+    
+        try:
+            # Obtener la release más reciente
+            r = requests.get(
+                f"https://api.github.com/repos/{GITHUB_USER}/{REPO_NAME}/releases/latest",
+                timeout=10
+            )
+            r.raise_for_status()
+            release = r.json()
+    
+            # Buscar el asset "estado_sectores.json"
+            asset = next((a for a in release["assets"] if a["name"] == "estado_sectores.json"), None)
+            if not asset:
+                # No hay JSON en la Release → mantener el estado previo y no mostrar error
                 return estado_previo
+    
+            # Descargar el JSON
+            json_resp = requests.get(asset["browser_download_url"], timeout=10)
+            json_resp.raise_for_status()
+            nuevo_estado = json_resp.json()
+    
+            # Guardar en caché el nuevo estado válido
+            st.session_state["estado_sectores_cache"] = nuevo_estado
+            return nuevo_estado
+    
+        except Exception as e:
+            # Error en la descarga → mantener el estado previo y no mostrar advertencia
+            return estado_previo
     
         except Exception as e:
             st.warning(f"No se pudo cargar datos desde GitHub Release: {e}")
@@ -481,6 +481,7 @@ else:
         )
 
         st.altair_chart(chart, use_container_width=True)
+
 
 
 
