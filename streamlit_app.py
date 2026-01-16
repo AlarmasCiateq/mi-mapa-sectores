@@ -544,7 +544,26 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
+# --- OCULTAR CONTROLES DE STREAMLIT CLOUD ---
+st.markdown(
+    """
+    <style>
+        /* Ocultar el botón de menú (coronita) */
+        button[kind="header"] {
+            display: none !important;
+        }
+        /* Ocultar el ícono "Deployed with Streamlit" */
+        .stDeployButton {
+            visibility: hidden !important;
+        }
+        /* Opcional: ocultar toda la barra inferior */
+        footer {
+            visibility: hidden !important;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 # --- NAVEGACIÓN ---
 if "vista_actual" not in st.session_state:
     st.session_state.vista_actual = "interactivo"
@@ -885,3 +904,4 @@ else:
         )
 
         st.altair_chart(chart, use_container_width=True)
+
