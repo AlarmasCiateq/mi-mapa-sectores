@@ -526,20 +526,30 @@ st.set_page_config(
 
 st.markdown(
     """
-    <div style="
-        position: fixed;
-        bottom: 10px;
-        right: 10px;
-        z-index: 999999999;
-        background-color: #111;
-        color: white;
-        padding: 4px 8px;
-        border-radius: 6px;
-        font-size: 0.9em;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-    ">
-        💧 CIATEQ®
-    </div>
+    <style>
+        /* Ocultar TODO el encabezado superior de Streamlit (menú hamburguesa, etc.) */
+        [data-testid="stHeader"] {
+            display: none !important;
+        }
+
+        /* Ocultar el pie de página completo (incluyendo "Deployed with Streamlit") */
+        [data-testid="stFooter"] {
+            display: none !important;
+        }
+
+        /* Refuerzo: ocultar cualquier botón flotante en esquinas */
+        .streamlit-footer,
+        .stAppDeployButton,
+        div[title="View fullscreen"],
+        button[title="View fullscreen"] {
+            display: none !important;
+        }
+
+        /* Asegurar que nada se salga del contenedor principal */
+        #MainMenu, footer, header {
+            visibility: hidden !important;
+        }
+    </style>
     """,
     unsafe_allow_html=True
 )
@@ -905,5 +915,6 @@ else:
         )
 
         st.altair_chart(chart, use_container_width=True)
+
 
 
