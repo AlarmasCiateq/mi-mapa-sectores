@@ -524,6 +524,26 @@ st.set_page_config(
     layout="centered"
 )
 
+st.markdown(
+    """
+    <div style="
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        z-index: 999999999;
+        background-color: #111;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.9em;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    ">
+        💧 CIATEQ®
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
 # --- MARCA DE AGUA ---
 st.markdown(
     """
@@ -544,26 +564,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-# --- OCULTAR CONTROLES DE STREAMLIT CLOUD ---
-st.markdown(
-    """
-    <style>
-        /* Ocultar el botón de menú (coronita) */
-        button[kind="header"] {
-            display: none !important;
-        }
-        /* Ocultar el ícono "Deployed with Streamlit" */
-        .stDeployButton {
-            visibility: hidden !important;
-        }
-        /* Opcional: ocultar toda la barra inferior */
-        footer {
-            visibility: hidden !important;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+
 # --- NAVEGACIÓN ---
 if "vista_actual" not in st.session_state:
     st.session_state.vista_actual = "interactivo"
@@ -904,4 +905,5 @@ else:
         )
 
         st.altair_chart(chart, use_container_width=True)
+
 
