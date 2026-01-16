@@ -750,39 +750,66 @@ else:
 
     @st.cache_data(ttl=300)
     def descargar_db():
-        r = requests.get(DB_RELEASE_URL, timeout=15)
-        r.raise_for_status()
-        release_info = r.json()
-    
-        # 🔹 NUEVO: verificar que haya assets
-        assets = release_info.get("assets", [])
-        if not assets:
-            st.error("⚠️ No hay archivos en la Release de GitHub. Espera a que el monitor suba los datos.")
+        try:
+            r = requests.get(DB_RELEASE_URL, timeout=15)
+            # No usar r.raise_for_status() directamente; manejar el estado
+            if r.status_code != 200:
+                st.error("⚠️ No se pudo acceder a la Release de GitHub. Código de error: " + str(r.status_code))
+                st.stop()
+
+            release_info = r.json()
+
+            # Verificar que haya assets
+            assets = release_info.get("assets", [])
+            if not assets:
+                st.error("❌ No hay archivos en la Release. Espera a que el monitor suba los datos.")
+                st.stop()
+
+            # Buscar EXPLÍCITAMENTE el archivo correcto
+            asset = None
+            for a in assets:
+                if a["name"] == "sectores.db":
+                    asset = a
+                    break
+
+            if not asset:
+                st.error("❌ No se encontró 'sectores.db' en la Release.")
+                st.stop()
+
+            fecha_github = (
+                datetime.strptime(asset["updated_at"], "%Y-%m-%dT%H:%M:%SZ")
+                + HORA_MEXICO
+            )
+
+            r_file = requests.get(asset["browser_download_url"], timeout=30)
+            if r_file.status_code != 200:
+                st.error("❌ Error al descargar la base de datos.")
+                st.stop()
+
+            db_path = "temp_db.db"
+            with open(db_path, "wb") as f:
+                f.write(r_file.content)
+
+            st.info(
+                "Última actualización de Base de datos "
+                f"(México GMT-6): "
+                f"{fecha_github.strftime('%d/%m/%Y %H:%M')}"
+            )
+
+            return db_path
+
+        except requests.exceptions.Timeout:
+            st.error("⏰ Tiempo de espera agotado al conectar con GitHub.")
             st.stop()
-    
-        # Buscar EXPLÍCITAMENTE el archivo correcto
-        asset = next(
-            a for a in assets
-            if a["name"] == "sectores.db"
-        )
-    
-        fecha_github = (
-            datetime.strptime(asset["updated_at"], "%Y-%m-%dT%H:%M:%SZ")
-            + HORA_MEXICO
-        )
-    
-        r_file = requests.get(asset["browser_download_url"], timeout=30)
-        db_path = "temp_db.db"
-        with open(db_path, "wb") as f:
-            f.write(r_file.content)
-    
-        st.info(
-            "Última actualización de Base de datos "
-            f"(México GMT-6): "
-            f"{fecha_github.strftime('%d/%m/%Y %H:%M')}"
-        )
-    
-        return db_path
+        except requests.exceptions.RequestException as e:
+            st.error("🌐 Error de red al acceder a GitHub.")
+            st.stop()
+        except ValueError:
+            st.error("📅 Error al procesar la fecha de la Release.")
+            st.stop()
+        except Exception as e:
+            st.error("⚠️ Error inesperado al cargar la base de datos.")
+            st.stop()
 
     db_path = descargar_db()
 
@@ -858,12 +885,3 @@ else:
         )
 
         st.altair_chart(chart, use_container_width=True)
-
-
-
-
-
-
-
-
-
