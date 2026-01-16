@@ -599,10 +599,9 @@ if st.session_state.vista_actual == "interactivo":
         return f"#{r:02x}{g:02x}00"
 
     def cargar_estado_desde_github():
-        # Inicializar caché si no existe
         if "estado_sectores_cache" not in st.session_state:
             st.session_state["estado_sectores_cache"] = None
-
+    
         try:
             # Obtener la release más reciente
             r = requests.get(
@@ -611,30 +610,40 @@ if st.session_state.vista_actual == "interactivo":
             )
             r.raise_for_status()
             release = r.json()
-
-            # Buscar el asset "estado_sectores.json"
-            asset = next((a for a in release["assets"] if a["name"] == "estado_sectores.json"), None)
-            if not asset:
-                # No está el archivo → mantener estado anterior
+    
+            # Filtrar assets que sean JSON y tengan el patrón correcto
+            assets_json = [
+                a for a in release["assets"]
+                if a["name"].startswith("estado_sectores_") and a["name"].endswith(".json")
+            ]
+    
+            if not assets_json:
+                # No hay ningún JSON versionado → mantener estado anterior
                 pass
             else:
-                # Descargar y validar el JSON
-                json_resp = requests.get(asset["browser_download_url"], timeout=10)
+                # Ordenar por fecha de actualización (más reciente primero)
+                assets_json.sort(key=lambda x: x["updated_at"], reverse=True)
+                latest_asset = assets_json[0]
+    
+                # Descargar con anti-caché
+                download_url = latest_asset["browser_download_url"]
+                anti_cache_url = f"{download_url}?t={int(datetime.now().timestamp())}"
+    
+                json_resp = requests.get(anti_cache_url, timeout=10)
                 json_resp.raise_for_status()
                 nuevo_estado = json_resp.json()
-
+    
                 if isinstance(nuevo_estado, dict):
                     st.session_state["estado_sectores_cache"] = nuevo_estado
                     return nuevo_estado
-
+    
         except Exception:
-            # Cualquier error → ignorar silenciosamente
+            # Silencioso ante cualquier error
             pass
-
-        # Devolver último estado bueno, o {} si nunca se ha cargado nada
+    
+        # Devolver caché o vacío si nunca se cargó
         cached = st.session_state["estado_sectores_cache"]
         return cached if cached is not None else {}
-
     geojson_path = "data/geojson/sector_hidraulico.geojson"
     if not os.path.exists(geojson_path):
         st.error(f"❌ GeoJSON no encontrado: {geojson_path}")
@@ -843,6 +852,7 @@ else:
         )
 
         st.altair_chart(chart, use_container_width=True)
+
 
 
 
