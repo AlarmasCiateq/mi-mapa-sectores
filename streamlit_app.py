@@ -23,7 +23,7 @@ REPO_NAME = "mi-mapa-sectores"
 BRANCH = "main"
 
 ESTADO_JSON_URL = (
-    f"https://raw.githubusercontent.com/{GITHUB_USER}/{REPO_NAME}/{BRANCH}/data/estado_sectores.json"
+f"https://raw.githubusercontent.com/{GITHUB_USER}/{REPO_NAME}/{BRANCH}/data/estado_sectores.json"
 )
 
 DB_RELEASE_URL = f"https://api.github.com/repos/{GITHUB_USER}/{REPO_NAME}/releases/latest"
@@ -31,68 +31,68 @@ DB_DOWNLOAD_URL = f"https://github.com/{GITHUB_USER}/{REPO_NAME}/releases/downlo
 
 # --- CONFIGURACIÓN ---
 st.set_page_config(
-    page_title="Sectores Hidráulicos CIATEQ",
-    page_icon="💧",
-    layout="centered"
+page_title="Sectores Hidráulicos CIATEQ",
+page_icon="💧",
+layout="centered"
 )
 
 # --- MARCA DE AGUA ---
 st.markdown(
-    """
-    <div style="
-        position: fixed;
-        top: 10px;
-        right: 18px;
-        z-index: 999999999;
-        color: white;
-        font-size: 1.3em;
-        background-color: #111;
-        padding: 5px 10px;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    ">
-        💧 CIATEQ® 💦 2025 ©
-    </div>
-    """,
-    unsafe_allow_html=True
+"""
+<div style="
+    position: fixed;
+    top: 10px;
+    right: 18px;
+    z-index: 999999999;
+    color: white;
+    font-size: 1.3em;
+    background-color: #111;
+    padding: 5px 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+">
+    💧 CIATEQ® 💦 2025 ©
+</div>
+""",
+unsafe_allow_html=True
 )
 
 # --- NAVEGACIÓN ---
 if "vista_actual" not in st.session_state:
-    st.session_state.vista_actual = "interactivo"
+st.session_state.vista_actual = "interactivo"
 
 if st.session_state.vista_actual == "interactivo":
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("🎬 Ir a evolución histórica"):
-            st.session_state.vista_actual = "historico"
-            st.rerun()
-    with col2:
-        if st.button("📊 Ir a análisis de datos"):
-            st.session_state.vista_actual = "analisis"
-            st.rerun()
+col1, col2 = st.columns(2)
+with col1:
+    if st.button("🎬 Ir a evolución histórica"):
+        st.session_state.vista_actual = "historico"
+        st.rerun()
+with col2:
+    if st.button("📊 Ir a análisis de datos"):
+        st.session_state.vista_actual = "analisis"
+        st.rerun()
 
 elif st.session_state.vista_actual == "historico":
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("⏱ Ir al mapa en tiempo real"):
-            st.session_state.vista_actual = "interactivo"
-            st.rerun()
-    with col2:
-        if st.button("📊 Ir a análisis de datos"):
-            st.session_state.vista_actual = "analisis"
-            st.rerun()
+col1, col2 = st.columns(2)
+with col1:
+    if st.button("⏱ Ir al mapa en tiempo real"):
+        st.session_state.vista_actual = "interactivo"
+        st.rerun()
+with col2:
+    if st.button("📊 Ir a análisis de datos"):
+        st.session_state.vista_actual = "analisis"
+        st.rerun()
 
 else:
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("⏱ Ir al mapa en tiempo real"):
-            st.session_state.vista_actual = "interactivo"
-            st.rerun()
-    with col2:
-        if st.button("🎬 Ir a evolución histórica"):
-            st.session_state.vista_actual = "historico"
-            st.rerun()
+col1, col2 = st.columns(2)
+with col1:
+    if st.button("⏱ Ir al mapa en tiempo real"):
+        st.session_state.vista_actual = "interactivo"
+        st.rerun()
+with col2:
+    if st.button("🎬 Ir a evolución histórica"):
+        st.session_state.vista_actual = "historico"
+        st.rerun()
 
 st.divider()
 
@@ -101,85 +101,85 @@ st.divider()
 # ==============================
 if st.session_state.vista_actual == "interactivo":
 
-    st.subheader("💧 Presión en Sectores Hidráulicos en Tiempo Real")
-    st_autorefresh(interval=60000, key="data_reloader")
+st.subheader("💧 Presión en Sectores Hidráulicos en Tiempo Real")
+st_autorefresh(interval=60000, key="data_reloader")
 
-    def interpolar_color(valor):
-        pct = max(0.0, min(valor / MAX_PRESION, 1.0))
-        r = int(255 * pct)
-        g = int(255 * (1 - pct))
-        return f"#{r:02x}{g:02x}00"
+def interpolar_color(valor):
+    pct = max(0.0, min(valor / MAX_PRESION, 1.0))
+    r = int(255 * pct)
+    g = int(255 * (1 - pct))
+    return f"#{r:02x}{g:02x}00"
 
-    # def cargar_estado_desde_github():
-    #     try:
-    #         r = requests.get(ESTADO_JSON_URL, timeout=10)
-    #         r.raise_for_status()
-    #         return r.json()
-    #     except Exception as e:
-    #         st.warning(f"No se pudo cargar datos: {e}")
-    #         return {}
-    
-    # def cargar_estado_desde_github():
-    #     try:
-    #         # Obtener la release más reciente
-    #         r = requests.get(
-    #             f"https://api.github.com/repos/{GITHUB_USER}/{REPO_NAME}/releases/latest",
-    #             timeout=10
-    #         )
-    #         r.raise_for_status()
-    #         release = r.json()
-    
-    #         # Buscar el asset "estado_sectores.json"
-    #         asset = next((a for a in release["assets"] if a["name"] == "estado_sectores.json"), None)
-    #         if not asset:
-    #             st.warning("Archivo estado_sectores.json no encontrado en la Release.")
-    #             return {}
-    
-    #         # Descargar el JSON
-    #         json_resp = requests.get(asset["browser_download_url"], timeout=10)
-    #         json_resp.raise_for_status()
-    #         return json_resp.json()
+# def cargar_estado_desde_github():
+#     try:
+#         r = requests.get(ESTADO_JSON_URL, timeout=10)
+#         r.raise_for_status()
+#         return r.json()
+#     except Exception as e:
+#         st.warning(f"No se pudo cargar datos: {e}")
+#         return {}
 
-        def cargar_estado_desde_github():
-        # Verificar si ya hemos cargado datos alguna vez
-        if "estado_sectores_cache" not in st.session_state:
-            st.session_state["estado_sectores_cache"] = None  # Indica "nunca cargado"
-            st.session_state["ultima_actualizacion_exitosa"] = None
-    
-        try:
-            # Obtener la release más reciente
-            r = requests.get(
-                f"https://api.github.com/repos/{GITHUB_USER}/{REPO_NAME}/releases/latest",
-                timeout=10
-            )
-            r.raise_for_status()
-            release = r.json()
-    
-            # Buscar el asset "estado_sectores.json"
-            asset = next((a for a in release["assets"] if a["name"] == "estado_sectores.json"), None)
-            if not asset:
-                # No está el archivo → mantener estado anterior (incluso si es None)
-                pass
-            else:
-                # Descargar y validar el JSON
-                json_resp = requests.get(asset["browser_download_url"], timeout=10)
-                json_resp.raise_for_status()
-                nuevo_estado = json_resp.json()
-    
-                # Guardar solo si es un dict válido
-                if isinstance(nuevo_estado, dict):
-                    st.session_state["estado_sectores_cache"] = nuevo_estado
-                    st.session_state["ultima_actualizacion_exitosa"] = datetime.now()
-                    return nuevo_estado
-    
-        except Exception as e:
-            # Error de red, timeout, JSON inválido, etc. → ignorar silenciosamente
+# def cargar_estado_desde_github():
+#     try:
+#         # Obtener la release más reciente
+#         r = requests.get(
+#             f"https://api.github.com/repos/{GITHUB_USER}/{REPO_NAME}/releases/latest",
+#             timeout=10
+#         )
+#         r.raise_for_status()
+#         release = r.json()
+
+#         # Buscar el asset "estado_sectores.json"
+#         asset = next((a for a in release["assets"] if a["name"] == "estado_sectores.json"), None)
+#         if not asset:
+#             st.warning("Archivo estado_sectores.json no encontrado en la Release.")
+#             return {}
+
+#         # Descargar el JSON
+#         json_resp = requests.get(asset["browser_download_url"], timeout=10)
+#         json_resp.raise_for_status()
+#         return json_resp.json()
+
+    def cargar_estado_desde_github():
+    # Verificar si ya hemos cargado datos alguna vez
+    if "estado_sectores_cache" not in st.session_state:
+        st.session_state["estado_sectores_cache"] = None  # Indica "nunca cargado"
+        st.session_state["ultima_actualizacion_exitosa"] = None
+
+    try:
+        # Obtener la release más reciente
+        r = requests.get(
+            f"https://api.github.com/repos/{GITHUB_USER}/{REPO_NAME}/releases/latest",
+            timeout=10
+        )
+        r.raise_for_status()
+        release = r.json()
+
+        # Buscar el asset "estado_sectores.json"
+        asset = next((a for a in release["assets"] if a["name"] == "estado_sectores.json"), None)
+        if not asset:
+            # No está el archivo → mantener estado anterior (incluso si es None)
             pass
-    
-        # Si llegamos aquí, no hubo actualización exitosa
-        # Devolver el último estado bueno, o {} si nunca se ha cargado nada
-        cached = st.session_state["estado_sectores_cache"]
-        return cached if cached is not None else {}
+        else:
+            # Descargar y validar el JSON
+            json_resp = requests.get(asset["browser_download_url"], timeout=10)
+            json_resp.raise_for_status()
+            nuevo_estado = json_resp.json()
+
+            # Guardar solo si es un dict válido
+            if isinstance(nuevo_estado, dict):
+                st.session_state["estado_sectores_cache"] = nuevo_estado
+                st.session_state["ultima_actualizacion_exitosa"] = datetime.now()
+                return nuevo_estado
+
+    except Exception as e:
+        # Error de red, timeout, JSON inválido, etc. → ignorar silenciosamente
+        pass
+
+    # Si llegamos aquí, no hubo actualización exitosa
+    # Devolver el último estado bueno, o {} si nunca se ha cargado nada
+    cached = st.session_state["estado_sectores_cache"]
+    return cached if cached is not None else {}
             
     geojson_path = "data/geojson/sector_hidraulico.geojson"
     if not os.path.exists(geojson_path):
@@ -487,6 +487,7 @@ else:
         )
 
         st.altair_chart(chart, use_container_width=True)
+
 
 
 
