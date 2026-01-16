@@ -141,45 +141,42 @@ def interpolar_color(valor):
 #         return json_resp.json()
 
     def cargar_estado_desde_github():
-    # Verificar si ya hemos cargado datos alguna vez
-    if "estado_sectores_cache" not in st.session_state:
-        st.session_state["estado_sectores_cache"] = None  # Indica "nunca cargado"
-        st.session_state["ultima_actualizacion_exitosa"] = None
+        # Inicializar caché si no existe
+        if "estado_sectores_cache" not in st.session_state:
+            st.session_state["estado_sectores_cache"] = None
 
-    try:
-        # Obtener la release más reciente
-        r = requests.get(
-            f"https://api.github.com/repos/{GITHUB_USER}/{REPO_NAME}/releases/latest",
-            timeout=10
-        )
-        r.raise_for_status()
-        release = r.json()
+        try:
+            # Obtener la release más reciente
+            r = requests.get(
+                f"https://api.github.com/repos/{GITHUB_USER}/{REPO_NAME}/releases/latest",
+                timeout=10
+            )
+            r.raise_for_status()
+            release = r.json()
 
-        # Buscar el asset "estado_sectores.json"
-        asset = next((a for a in release["assets"] if a["name"] == "estado_sectores.json"), None)
-        if not asset:
-            # No está el archivo → mantener estado anterior (incluso si es None)
+            # Buscar el asset "estado_sectores.json"
+            asset = next((a for a in release["assets"] if a["name"] == "estado_sectores.json"), None)
+            if not asset:
+                # No está el archivo → mantener estado anterior
+                pass
+            else:
+                # Descargar y validar el JSON
+                json_resp = requests.get(asset["browser_download_url"], timeout=10)
+                json_resp.raise_for_status()
+                nuevo_estado = json_resp.json()
+
+                if isinstance(nuevo_estado, dict):
+                    st.session_state["estado_sectores_cache"] = nuevo_estado
+                    return nuevo_estado
+
+        except Exception:
+            # Cualquier error (red, timeout, JSON inválido, etc.) → ignorar silenciosamente
             pass
-        else:
-            # Descargar y validar el JSON
-            json_resp = requests.get(asset["browser_download_url"], timeout=10)
-            json_resp.raise_for_status()
-            nuevo_estado = json_resp.json()
 
-            # Guardar solo si es un dict válido
-            if isinstance(nuevo_estado, dict):
-                st.session_state["estado_sectores_cache"] = nuevo_estado
-                st.session_state["ultima_actualizacion_exitosa"] = datetime.now()
-                return nuevo_estado
+        # Devolver último estado bueno, o {} si nunca se ha cargado nada
+        cached = st.session_state["estado_sectores_cache"]
+        return cached if cached is not None else {}
 
-    except Exception as e:
-        # Error de red, timeout, JSON inválido, etc. → ignorar silenciosamente
-        pass
-
-    # Si llegamos aquí, no hubo actualización exitosa
-    # Devolver el último estado bueno, o {} si nunca se ha cargado nada
-    cached = st.session_state["estado_sectores_cache"]
-    return cached if cached is not None else {}
             
     geojson_path = "data/geojson/sector_hidraulico.geojson"
     if not os.path.exists(geojson_path):
@@ -487,6 +484,7 @@ else:
         )
 
         st.altair_chart(chart, use_container_width=True)
+
 
 
 
