@@ -110,15 +110,38 @@ if st.session_state.vista_actual == "interactivo":
         g = int(255 * (1 - pct))
         return f"#{r:02x}{g:02x}00"
 
+    # def cargar_estado_desde_github():
+    #     try:
+    #         r = requests.get(ESTADO_JSON_URL, timeout=10)
+    #         r.raise_for_status()
+    #         return r.json()
+    #     except Exception as e:
+    #         st.warning(f"No se pudo cargar datos: {e}")
+    #         return {}
     def cargar_estado_desde_github():
         try:
-            r = requests.get(ESTADO_JSON_URL, timeout=10)
+            # Obtener la release más reciente
+            r = requests.get(
+                f"https://api.github.com/repos/{GITHUB_USER}/{REPO_NAME}/releases/latest",
+                timeout=10
+            )
             r.raise_for_status()
-            return r.json()
+            release = r.json()
+    
+            # Buscar el asset "estado_sectores.json"
+            asset = next((a for a in release["assets"] if a["name"] == "estado_sectores.json"), None)
+            if not asset:
+                st.warning("Archivo estado_sectores.json no encontrado en la Release.")
+                return {}
+    
+            # Descargar el JSON
+            json_resp = requests.get(asset["browser_download_url"], timeout=10)
+            json_resp.raise_for_status()
+            return json_resp.json()
+    
         except Exception as e:
-            st.warning(f"No se pudo cargar datos: {e}")
+            st.warning(f"No se pudo cargar datos desde GitHub Release: {e}")
             return {}
-
     geojson_path = "data/geojson/sector_hidraulico.geojson"
     if not os.path.exists(geojson_path):
         st.error(f"❌ GeoJSON no encontrado: {geojson_path}")
@@ -425,5 +448,6 @@ else:
         )
 
         st.altair_chart(chart, use_container_width=True)
+
 
 
