@@ -99,16 +99,7 @@ st.divider()
 # ==============================
 # VISTA 1: MAPA EN TIEMPO REAL
 # ==============================
-if st.session_state.vista_actual == "interactivo":
 
-st.subheader("💧 Presión en Sectores Hidráulicos en Tiempo Real")
-st_autorefresh(interval=60000, key="data_reloader")
-
-def interpolar_color(valor):
-    pct = max(0.0, min(valor / MAX_PRESION, 1.0))
-    r = int(255 * pct)
-    g = int(255 * (1 - pct))
-    return f"#{r:02x}{g:02x}00"
 
 # def cargar_estado_desde_github():
 #     try:
@@ -139,6 +130,19 @@ def interpolar_color(valor):
 #         json_resp = requests.get(asset["browser_download_url"], timeout=10)
 #         json_resp.raise_for_status()
 #         return json_resp.json()
+# ==============================
+# VISTA 1: MAPA EN TIEMPO REAL
+# ==============================
+if st.session_state.vista_actual == "interactivo":
+
+    st.subheader("💧 Presión en Sectores Hidráulicos en Tiempo Real")
+    st_autorefresh(interval=60000, key="data_reloader")  # Refresca cada 60 segundos
+
+    def interpolar_color(valor):
+        pct = max(0.0, min(valor / MAX_PRESION, 1.0))
+        r = int(255 * pct)
+        g = int(255 * (1 - pct))
+        return f"#{r:02x}{g:02x}00"
 
     def cargar_estado_desde_github():
         # Inicializar caché si no existe
@@ -177,7 +181,6 @@ def interpolar_color(valor):
         cached = st.session_state["estado_sectores_cache"]
         return cached if cached is not None else {}
 
-            
     geojson_path = "data/geojson/sector_hidraulico.geojson"
     if not os.path.exists(geojson_path):
         st.error(f"❌ GeoJSON no encontrado: {geojson_path}")
@@ -484,6 +487,7 @@ else:
         )
 
         st.altair_chart(chart, use_container_width=True)
+
 
 
 
