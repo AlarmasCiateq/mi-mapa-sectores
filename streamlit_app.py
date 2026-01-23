@@ -929,43 +929,59 @@ from shapely.geometry import shape
 import pandas as pd
 import sqlite3
 import altair as alt
-import tempfile
+
+MAX_PRESION = 3.0
+HORA_MEXICO = timedelta(hours=-6)
 
 # ==============================
-# CONFIGURACIÓN
+# FUENTES DE DATOS (GITHUB)
 # ==============================
-MAX_PRESION = 3.0
 GITHUB_USER = "AlarmasCiateq"
 REPO_NAME = "mi-mapa-sectores"
 BRANCH = "main"
 
-# URLs CORRECTAS (sin espacios, sin releases)
-RAW_BASE = f"https://raw.githubusercontent.com/{GITHUB_USER}/{REPO_NAME}/{BRANCH}"
-ESTADO_JSON_URL = f"{RAW_BASE}/data/estado_sectores.json"
-DB_URL = f"{RAW_BASE}/data/hidro_datos.db"
+# URLs corregidas: ¡SIN ESPACIOS!
+ESTADO_JSON_URL = f"https://raw.githubusercontent.com/{GITHUB_USER}/{REPO_NAME}/{BRANCH}/data/estado_sectores.json"
+DB_URL = f"https://raw.githubusercontent.com/{GITHUB_USER}/{REPO_NAME}/{BRANCH}/data/hidro_datos.db"
 
+# --- CONFIGURACIÓN ---
 st.set_page_config(
     page_title="Sectores Hidráulicos CIATEQ",
     page_icon="💧",
     layout="centered"
 )
 
-# === Estilos (igual que antes) ===
 st.markdown(
     """
     <style>
-        [data-testid="stHeader"] { display: none !important; }
-        [data-testid="stFooter"] { display: none !important; }
-        .streamlit-footer, .stAppDeployButton, div[title="View fullscreen"], button[title="View fullscreen"] {
+        /* Ocultar TODO el encabezado superior de Streamlit (menú hamburguesa, etc.) */
+        [data-testid="stHeader"] {
             display: none !important;
         }
-        #MainMenu, footer, header { visibility: hidden !important; }
+
+        /* Ocultar el pie de página completo (incluyendo "Deployed with Streamlit") */
+        [data-testid="stFooter"] {
+            display: none !important;
+        }
+
+        /* Refuerzo: ocultar cualquier botón flotante en esquinas */
+        .streamlit-footer,
+        .stAppDeployButton,
+        div[title="View fullscreen"],
+        button[title="View fullscreen"] {
+            display: none !important;
+        }
+
+        /* Asegurar que nada se salga del contenedor principal */
+        #MainMenu, footer, header {
+            visibility: hidden !important;
+        }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# === Marca de agua ===
+# --- MARCA DE AGUA ---
 st.markdown(
     """
     <div style="
@@ -986,33 +1002,52 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# === Navegación ===
+# --- NAVEGACIÓN ---
 if "vista_actual" not in st.session_state:
     st.session_state.vista_actual = "interactivo"
 
-# ... (tu lógica de botones de navegación se mantiene igual) ...
+if st.session_state.vista_actual == "interactivo":
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("🎬 Ir a evolución histórica"):
+            st.session_state.vista_actual = "historico"
+            st.rerun()
+    with col2:
+        if st.button("📊 Ir a análisis de datos"):
+            st.session_state.vista_actual = "analisis"
+            st.rerun()
+
+elif st.session_state.vista_actual == "historico":
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("⏱ Ir al mapa en tiempo real"):
+            st.session_state.vista_actual = "interactivo"
+            st.rerun()
+    with col2:
+        if st.button("📊 Ir a análisis de datos"):
+            st.session_state.vista_actual = "analisis"
+            st.rerun()
+
+else:
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("⏱ Ir al mapa en tiempo real"):
+            st.session_state.vista_actual = "interactivo"
+            st.rerun()
+    with col2:
+        if st.button("🎬 Ir a evolución histórica"):
+            st.session_state.vista_actual = "historico"
+            st.rerun()
 
 st.divider()
-
-# ==============================
-# FUNCIÓN PARA CARGAR JSON ACTUAL
-# ==============================
-@st.cache_data(ttl=60)  # Actualiza cada minuto
-def cargar_estado_json():
-    try:
-        r = requests.get(ESTADO_JSON_URL + f"?t={int(datetime.now().timestamp())}", timeout=10)
-        r.raise_for_status()
-        return r.json()
-    except Exception as e:
-        st.error("⚠️ No se pudo cargar el estado actual.")
-        return {}
 
 # ==============================
 # VISTA 1: MAPA EN TIEMPO REAL
 # ==============================
 if st.session_state.vista_actual == "interactivo":
+
     st.subheader("💧 Presión en Sectores Hidráulicos en Tiempo Real")
-    st_autorefresh(interval=60000, key="mapa_refresh")
+    st_autorefresh(interval=60000, key="data_reloader")
 
     def interpolar_color(valor):
         pct = max(0.0, min(valor / MAX_PRESION, 1.0))
@@ -1020,7 +1055,30 @@ if st.session_state.vista_actual == "interactivo":
         g = int(255 * (1 - pct))
         return f"#{r:02x}{g:02x}00"
 
-    # Cargar GeoJSON local (asumiendo que está en el mismo repo de Streamlit)
+    def cargar_estado_desde_github():
+        if "estado_sectores_cache" not in st.session_state:
+            st.session_state["estado_sectores_cache"] = None
+    
+        try:
+            # Descargar JSON directamente desde el repo (no desde releases)
+            r = requests.get(
+                ESTADO_JSON_URL + f"?t={int(datetime.now().timestamp())}",
+                timeout=10
+            )
+            r.raise_for_status()
+            nuevo_estado = r.json()
+    
+            if isinstance(nuevo_estado, dict):
+                st.session_state["estado_sectores_cache"] = nuevo_estado
+                return nuevo_estado
+    
+        except Exception:
+            # Silencioso ante cualquier error
+            pass
+    
+        # Devolver caché o vacío si nunca se cargó
+        cached = st.session_state["estado_sectores_cache"]
+        return cached if cached is not None else {}
     geojson_path = "data/geojson/sector_hidraulico.geojson"
     if not os.path.exists(geojson_path):
         st.error(f"❌ GeoJSON no encontrado: {geojson_path}")
@@ -1030,7 +1088,7 @@ if st.session_state.vista_actual == "interactivo":
         with open(geojson_path, "r", encoding="utf-8") as f:
             st.session_state.geojson_data = json.load(f)
 
-    estado_presion_raw = cargar_estado_json()
+    estado_presion_raw = cargar_estado_desde_github()
 
     centro = [24.117124, -110.358397]
     m = folium.Map(location=centro, zoom_start=12)
@@ -1076,12 +1134,12 @@ if st.session_state.vista_actual == "interactivo":
         ).add_to(m)
 
     st_folium(m, width="100%", height=550)
-
+    
 # ==============================
-# VISTA 2: EVOLUCIÓN HISTÓRICA (sin cambios)
+# VISTA 2: EVOLUCIÓN HISTÓRICA
 # ==============================
 elif st.session_state.vista_actual == "historico":
-    # ... (tu código actual para videos se mantiene igual, porque ya usa GitHub Pages) ...
+
     st.subheader("💧 Evolución de Presión en Sectores Hidráulicos")
 
     @st.cache_data(ttl=3600)
@@ -1119,9 +1177,10 @@ elif st.session_state.vista_actual == "historico":
     )
 
 # ==============================
-# VISTA 3: ANÁLISIS DE DATOS (corregida)
+# VISTA 3: ANÁLISIS DE DATOS
 # ==============================
 else:
+
     st.subheader("📊 Análisis Histórico de Presión en Sectores")
 
     @st.cache_data(ttl=300)
@@ -1130,53 +1189,95 @@ else:
             r = requests.get(DB_URL + f"?t={int(datetime.now().timestamp())}", timeout=15)
             r.raise_for_status()
 
-            # Guardar en archivo temporal
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".db") as tmp:
-                tmp.write(r.content)
-                return tmp.name
+            db_path = "temp_db.db"
+            with open(db_path, "wb") as f:
+                f.write(r.content)
 
+            st.info("Última actualización de Base de datos descargada correctamente.")
+
+            return db_path
+
+        except requests.exceptions.Timeout:
+            st.error("⏰ Tiempo de espera agotado al conectar con GitHub.")
+            st.stop()
+        except requests.exceptions.RequestException as e:
+            st.error("🌐 Error de red al acceder a GitHub.")
+            st.stop()
         except Exception as e:
-            st.error("⚠️ Error al descargar la base de datos.")
+            st.error("⚠️ Error inesperado al cargar la base de datos.")
             st.stop()
 
     db_path = descargar_db()
 
     def cargar_datos():
         with sqlite3.connect(db_path) as conn:
-            df = pd.read_sql("SELECT * FROM lecturas ORDER BY id ASC", conn)
-        df["timestamp"] = pd.to_datetime(df["timestamp"], format="%d-%m-%Y %H:%M", errors="coerce")
+            df = pd.read_sql(
+                "SELECT * FROM lecturas ORDER BY id ASC",
+                conn
+            )
+
+        # El timestamp YA está en hora local → no volver a moverlo
+        df["timestamp"] = pd.to_datetime(
+            df["timestamp"],
+            format="%d-%m-%Y %H:%M",
+            errors="coerce"
+        )
+
         df = df.dropna(subset=["timestamp"])
         return df
 
     df = cargar_datos()
 
     dispositivos = df["dispositivo"].unique().tolist()
-    dispositivos_sel = st.multiselect("Sectores", dispositivos, default=dispositivos[:3])
+
+    dispositivos_sel = st.multiselect(
+        "Sectores",
+        dispositivos,
+        default=dispositivos[:3]
+    )
 
     if st.button("🔄 Cargar"):
+
         df_sel = df[df["dispositivo"].isin(dispositivos_sel)]
-        if df_sel.empty:
-            st.warning("No hay datos para los sectores seleccionados.")
-        else:
+
+        if not df_sel.empty:
             ultima = df_sel["timestamp"].max()
             inicio = ultima - pd.Timedelta(hours=24)
-            df_sel["fecha_str"] = df_sel["timestamp"].dt.strftime("%d/%m/%Y %H:%M:%S")
+        else:
+            ultima = None
+            inicio = None
 
-            chart = (
-                alt.Chart(df_sel)
-                .mark_line(point=True)
-                .encode(
-                    x=alt.X("timestamp:T", title="Fecha y hora", scale=alt.Scale(domain=[inicio, ultima])),
-                    y=alt.Y("valor:Q", title="Presión (kg/cm²)"),
-                    color=alt.Color("dispositivo:N", legend=alt.Legend(title="Sector", orient="bottom")),
-                    tooltip=[
-                        alt.Tooltip("dispositivo:N", title="Sector"),
-                        alt.Tooltip("fecha_str:N", title="Fecha"),
-                        alt.Tooltip("valor:Q", title="Presión", format=".2f")
-                    ]
-                )
-                .interactive()
+        df_sel["fecha_str"] = df_sel["timestamp"].dt.strftime(
+            "%d/%m/%Y %H:%M:%S"
+        )
+
+        chart = (
+            alt.Chart(df_sel)
+            .mark_line(point=True)
+            .encode(
+                x=alt.X(
+                    "timestamp:T",
+                    title="Fecha y hora",
+                    scale=alt.Scale(domain=[inicio, ultima])
+                ),
+                y=alt.Y(
+                    "valor:Q",
+                    title="Presión (kg/cm²)"
+                ),
+                color=alt.Color(
+                    "dispositivo:N",
+                    legend=alt.Legend(
+                        title="Sector",
+                        orient="bottom"
+                    )
+                ),
+                tooltip=[
+                    alt.Tooltip("dispositivo:N", title="Sector"),
+                    alt.Tooltip("fecha_str:N", title="Fecha"),
+                    alt.Tooltip("valor:Q", title="Presión", format=".2f")
+                ]
             )
-            st.altair_chart(chart, use_container_width=True)
+            .interactive()
+        )
 
-
+        st.altair_chart(chart, use_container_width=True)
