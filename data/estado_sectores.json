@@ -48,5 +48,25 @@
     "valor": 1.78,
     "timestamp": "22-01-2026 15:15",
     "rssi": "-83"
+  },
+  "SECTOR 10": {
+    "valor": 0.0,
+    "timestamp": "23-01-2026 11:32",
+    "rssi": -116
+  },
+  "SECTOR 4": {
+    "valor": 0.0,
+    "timestamp": "23-01-2026 11:41",
+    "rssi": -105
+  },
+  "SECTOR 8": {
+    "valor": 0.0,
+    "timestamp": "23-01-2026 11:31",
+    "rssi": -116
+  },
+  "SECTOR 5": {
+    "valor": 0.0,
+    "timestamp": "23-01-2026 11:40",
+    "rssi": -118
   }
 }
