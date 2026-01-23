@@ -1281,7 +1281,6 @@
 #         )
 
 #         st.altair_chart(chart, use_container_width=True)
-
 import os
 import streamlit as st
 import folium
