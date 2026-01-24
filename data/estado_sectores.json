@@ -1,62 +1,62 @@
 {
   "SECTOR 11": {
-    "valor": 2.86,
-    "timestamp": "23-01-2026 17:50",
-    "rssi": "-65"
+    "valor": 2.49,
+    "timestamp": "23-01-2026 18:00",
+    "rssi": "-75"
   },
   "SECTOR 12": {
-    "valor": 2.21,
-    "timestamp": "23-01-2026 17:50",
-    "rssi": "-65"
+    "valor": 1.75,
+    "timestamp": "23-01-2026 18:00",
+    "rssi": "-75"
   },
   "SECTOR 13": {
-    "valor": 1.75,
-    "timestamp": "23-01-2026 17:50",
-    "rssi": "-65"
+    "valor": 1.73,
+    "timestamp": "23-01-2026 18:00",
+    "rssi": "-75"
   },
   "SECTOR 13 CHOYAL": {
-    "valor": 2.11,
-    "timestamp": "23-01-2026 17:50",
-    "rssi": "-65"
+    "valor": 2.06,
+    "timestamp": "23-01-2026 18:00",
+    "rssi": "-75"
   },
   "SECTOR 14": {
-    "valor": 2.7,
-    "timestamp": "23-01-2026 17:50",
-    "rssi": "-65"
+    "valor": 2.9,
+    "timestamp": "23-01-2026 18:00",
+    "rssi": "-75"
   },
   "SECTOR 15": {
-    "valor": 2.5,
-    "timestamp": "23-01-2026 17:50",
-    "rssi": "-65"
+    "valor": 2.35,
+    "timestamp": "23-01-2026 18:00",
+    "rssi": "-75"
   },
   "SECTOR 16": {
-    "valor": 1.16,
-    "timestamp": "23-01-2026 17:50",
-    "rssi": "-65"
+    "valor": 0.86,
+    "timestamp": "23-01-2026 18:00",
+    "rssi": "-75"
   },
   "SECTOR 17": {
-    "valor": 1.66,
-    "timestamp": "23-01-2026 17:50",
-    "rssi": "-65"
+    "valor": 1.85,
+    "timestamp": "23-01-2026 18:00",
+    "rssi": "-75"
   },
   "SECTOR 18": {
-    "valor": 3.0,
-    "timestamp": "23-01-2026 17:50",
-    "rssi": "-65"
+    "valor": 2.86,
+    "timestamp": "23-01-2026 18:00",
+    "rssi": "-75"
   },
   "SECTOR 19": {
-    "valor": 1.9,
-    "timestamp": "23-01-2026 17:50",
-    "rssi": "-65"
+    "valor": 2.27,
+    "timestamp": "23-01-2026 18:00",
+    "rssi": "-75"
   },
   "SECTOR 10": {
     "valor": 0.0,
-    "timestamp": "23-01-2026 17:57",
-    "rssi": -118
+    "timestamp": "23-01-2026 18:02",
+    "rssi": -117
   },
   "SECTOR 4": {
     "valor": 0.0,
-    "timestamp": "23-01-2026 17:57",
+    "timestamp": "23-01-2026 18:03",
     "rssi": -106
   },
   "SECTOR 8": {
