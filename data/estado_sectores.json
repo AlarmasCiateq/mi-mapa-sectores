@@ -1,63 +1,63 @@
 {
   "SECTOR 11": {
-    "valor": 2.96,
-    "timestamp": "24-01-2026 19:07",
+    "valor": 2.97,
+    "timestamp": "24-01-2026 19:12",
     "rssi": "-81"
   },
   "SECTOR 12": {
-    "valor": 2.23,
-    "timestamp": "24-01-2026 19:07",
+    "valor": 1.78,
+    "timestamp": "24-01-2026 19:12",
     "rssi": "-81"
   },
   "SECTOR 13": {
-    "valor": 2.03,
-    "timestamp": "24-01-2026 19:07",
+    "valor": 1.91,
+    "timestamp": "24-01-2026 19:12",
     "rssi": "-81"
   },
   "SECTOR 13 CHOYAL": {
-    "valor": 2.0,
-    "timestamp": "24-01-2026 19:07",
+    "valor": 1.87,
+    "timestamp": "24-01-2026 19:12",
     "rssi": "-81"
   },
   "SECTOR 14": {
-    "valor": 3.0,
-    "timestamp": "24-01-2026 19:07",
+    "valor": 2.8,
+    "timestamp": "24-01-2026 19:12",
     "rssi": "-81"
   },
   "SECTOR 15": {
-    "valor": 2.76,
-    "timestamp": "24-01-2026 19:07",
+    "valor": 2.46,
+    "timestamp": "24-01-2026 19:12",
     "rssi": "-81"
   },
   "SECTOR 16": {
-    "valor": 0.96,
-    "timestamp": "24-01-2026 19:07",
+    "valor": 0.79,
+    "timestamp": "24-01-2026 19:12",
     "rssi": "-81"
   },
   "SECTOR 17": {
-    "valor": 1.69,
-    "timestamp": "24-01-2026 19:07",
+    "valor": 1.38,
+    "timestamp": "24-01-2026 19:12",
     "rssi": "-81"
   },
   "SECTOR 18": {
-    "valor": 3.0,
-    "timestamp": "24-01-2026 19:07",
+    "valor": 2.96,
+    "timestamp": "24-01-2026 19:12",
     "rssi": "-81"
   },
   "SECTOR 19": {
-    "valor": 2.15,
-    "timestamp": "24-01-2026 19:07",
+    "valor": 2.36,
+    "timestamp": "24-01-2026 19:12",
     "rssi": "-81"
   },
   "SECTOR 10": {
     "valor": 0.0,
-    "timestamp": "24-01-2026 19:12",
-    "rssi": -117
+    "timestamp": "24-01-2026 19:17",
+    "rssi": -116
   },
   "SECTOR 4": {
     "valor": 0.0,
-    "timestamp": "24-01-2026 19:14",
-    "rssi": -106
+    "timestamp": "24-01-2026 19:20",
+    "rssi": -103
   },
   "SECTOR 8": {
     "valor": 0.0,
@@ -66,7 +66,7 @@
   },
   "SECTOR 5": {
     "valor": 0.0,
-    "timestamp": "24-01-2026 19:10",
-    "rssi": -113
+    "timestamp": "24-01-2026 19:15",
+    "rssi": -114
   }
 }
