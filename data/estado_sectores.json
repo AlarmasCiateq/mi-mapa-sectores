@@ -1,58 +1,58 @@
 {
   "SECTOR 11": {
-    "valor": 0.74,
-    "timestamp": "31-01-2026 06:48",
-    "rssi": "-84"
+    "valor": 0.66,
+    "timestamp": "31-01-2026 06:53",
+    "rssi": "-83"
   },
   "SECTOR 12": {
     "valor": 2.71,
-    "timestamp": "31-01-2026 06:48",
-    "rssi": "-84"
+    "timestamp": "31-01-2026 06:53",
+    "rssi": "-83"
   },
   "SECTOR 13": {
     "valor": 3.0,
-    "timestamp": "31-01-2026 06:48",
-    "rssi": "-84"
+    "timestamp": "31-01-2026 06:53",
+    "rssi": "-83"
   },
   "SECTOR 13 CHOYAL": {
-    "valor": 1.61,
-    "timestamp": "31-01-2026 06:48",
-    "rssi": "-84"
+    "valor": 1.44,
+    "timestamp": "31-01-2026 06:53",
+    "rssi": "-83"
   },
   "SECTOR 14": {
-    "valor": 0.5,
-    "timestamp": "31-01-2026 06:48",
-    "rssi": "-84"
+    "valor": 0.53,
+    "timestamp": "31-01-2026 06:53",
+    "rssi": "-83"
   },
   "SECTOR 15": {
     "valor": 0.5,
-    "timestamp": "31-01-2026 06:48",
-    "rssi": "-84"
+    "timestamp": "31-01-2026 06:53",
+    "rssi": "-83"
   },
   "SECTOR 16": {
-    "valor": 1.78,
-    "timestamp": "31-01-2026 06:48",
-    "rssi": "-84"
+    "valor": 1.73,
+    "timestamp": "31-01-2026 06:53",
+    "rssi": "-83"
   },
   "SECTOR 17": {
     "valor": 0.61,
-    "timestamp": "31-01-2026 06:48",
-    "rssi": "-84"
+    "timestamp": "31-01-2026 06:53",
+    "rssi": "-83"
   },
   "SECTOR 18": {
-    "valor": 1.91,
-    "timestamp": "31-01-2026 06:48",
-    "rssi": "-84"
+    "valor": 2.03,
+    "timestamp": "31-01-2026 06:53",
+    "rssi": "-83"
   },
   "SECTOR 19": {
-    "valor": 2.16,
-    "timestamp": "31-01-2026 06:48",
-    "rssi": "-84"
+    "valor": 2.36,
+    "timestamp": "31-01-2026 06:53",
+    "rssi": "-83"
   },
   "SECTOR 10": {
     "valor": 0.0,
-    "timestamp": "31-01-2026 06:48",
-    "rssi": -116
+    "timestamp": "31-01-2026 06:53",
+    "rssi": -117
   },
   "SECTOR 4": {
     "valor": 0.0,
@@ -66,7 +66,7 @@
   },
   "SECTOR 5": {
     "valor": 0.0,
-    "timestamp": "31-01-2026 06:51",
-    "rssi": -111
+    "timestamp": "31-01-2026 06:56",
+    "rssi": -112
   }
 }
