@@ -51,7 +51,7 @@
   },
   "SECTOR 10": {
     "valor": 0.0,
-    "timestamp": "05-02-2026 16:39",
+    "timestamp": "05-02-2026 16:44",
     "rssi": -118
   },
   "SECTOR 4": {
@@ -61,12 +61,12 @@
   },
   "SECTOR 8": {
     "valor": 0.0,
-    "timestamp": "05-02-2026 16:41",
-    "rssi": -117
+    "timestamp": "05-02-2026 16:46",
+    "rssi": -115
   },
   "SECTOR 5": {
     "valor": 0.0,
-    "timestamp": "05-02-2026 16:37",
-    "rssi": -117
+    "timestamp": "05-02-2026 16:47",
+    "rssi": -114
   }
 }
