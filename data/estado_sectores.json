@@ -1,58 +1,58 @@
 {
   "SECTOR 11": {
-    "valor": 1.63,
-    "timestamp": "05-02-2026 20:56",
-    "rssi": "-71"
+    "valor": 1.3,
+    "timestamp": "05-02-2026 21:01",
+    "rssi": "-79"
   },
   "SECTOR 12": {
-    "valor": 0.78,
-    "timestamp": "05-02-2026 20:56",
-    "rssi": "-71"
+    "valor": 1.19,
+    "timestamp": "05-02-2026 21:01",
+    "rssi": "-79"
   },
   "SECTOR 13": {
-    "valor": 1.15,
-    "timestamp": "05-02-2026 20:56",
-    "rssi": "-71"
+    "valor": 1.37,
+    "timestamp": "05-02-2026 21:01",
+    "rssi": "-79"
   },
   "SECTOR 13 CHOYAL": {
-    "valor": 1.46,
-    "timestamp": "05-02-2026 20:56",
-    "rssi": "-71"
+    "valor": 1.86,
+    "timestamp": "05-02-2026 21:01",
+    "rssi": "-79"
   },
   "SECTOR 14": {
-    "valor": 2.2,
-    "timestamp": "05-02-2026 20:56",
-    "rssi": "-71"
+    "valor": 2.32,
+    "timestamp": "05-02-2026 21:01",
+    "rssi": "-79"
   },
   "SECTOR 15": {
-    "valor": 2.47,
-    "timestamp": "05-02-2026 20:56",
-    "rssi": "-71"
+    "valor": 3.0,
+    "timestamp": "05-02-2026 21:01",
+    "rssi": "-79"
   },
   "SECTOR 16": {
-    "valor": 0.76,
-    "timestamp": "05-02-2026 20:56",
-    "rssi": "-71"
+    "valor": 0.61,
+    "timestamp": "05-02-2026 21:01",
+    "rssi": "-79"
   },
   "SECTOR 17": {
-    "valor": 0.98,
-    "timestamp": "05-02-2026 20:56",
-    "rssi": "-71"
+    "valor": 0.97,
+    "timestamp": "05-02-2026 21:01",
+    "rssi": "-79"
   },
   "SECTOR 18": {
-    "valor": 1.76,
-    "timestamp": "05-02-2026 20:56",
-    "rssi": "-71"
+    "valor": 1.47,
+    "timestamp": "05-02-2026 21:01",
+    "rssi": "-79"
   },
   "SECTOR 19": {
     "valor": 3.0,
-    "timestamp": "05-02-2026 20:56",
-    "rssi": "-71"
+    "timestamp": "05-02-2026 21:01",
+    "rssi": "-79"
   },
   "SECTOR 10": {
     "valor": 0.0,
-    "timestamp": "05-02-2026 20:59",
-    "rssi": -120
+    "timestamp": "05-02-2026 21:09",
+    "rssi": -119
   },
   "SECTOR 4": {
     "valor": 0.0,
@@ -61,12 +61,12 @@
   },
   "SECTOR 8": {
     "valor": 0.0,
-    "timestamp": "05-02-2026 21:01",
-    "rssi": -115
+    "timestamp": "05-02-2026 21:06",
+    "rssi": -117
   },
   "SECTOR 5": {
     "valor": 0.0,
-    "timestamp": "05-02-2026 21:02",
-    "rssi": -117
+    "timestamp": "05-02-2026 21:07",
+    "rssi": -116
   }
 }
