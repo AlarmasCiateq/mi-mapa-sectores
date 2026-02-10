@@ -1,57 +1,57 @@
 {
   "SECTOR 11": {
-    "valor": 1.75,
-    "timestamp": "10-02-2026 09:18",
+    "valor": 1.26,
+    "timestamp": "10-02-2026 09:23",
     "rssi": "-80"
   },
   "SECTOR 12": {
-    "valor": 1.1,
-    "timestamp": "10-02-2026 09:18",
+    "valor": 0.73,
+    "timestamp": "10-02-2026 09:23",
     "rssi": "-80"
   },
   "SECTOR 13": {
-    "valor": 1.08,
-    "timestamp": "10-02-2026 09:18",
+    "valor": 1.28,
+    "timestamp": "10-02-2026 09:23",
     "rssi": "-80"
   },
   "SECTOR 13 CHOYAL": {
-    "valor": 1.78,
-    "timestamp": "10-02-2026 09:18",
+    "valor": 1.6,
+    "timestamp": "10-02-2026 09:23",
     "rssi": "-80"
   },
   "SECTOR 14": {
-    "valor": 1.99,
-    "timestamp": "10-02-2026 09:18",
+    "valor": 2.14,
+    "timestamp": "10-02-2026 09:23",
     "rssi": "-80"
   },
   "SECTOR 15": {
-    "valor": 2.72,
-    "timestamp": "10-02-2026 09:18",
+    "valor": 2.51,
+    "timestamp": "10-02-2026 09:23",
     "rssi": "-80"
   },
   "SECTOR 16": {
     "valor": 0.5,
-    "timestamp": "10-02-2026 09:18",
+    "timestamp": "10-02-2026 09:23",
     "rssi": "-80"
   },
   "SECTOR 17": {
-    "valor": 1.08,
-    "timestamp": "10-02-2026 09:18",
+    "valor": 0.85,
+    "timestamp": "10-02-2026 09:23",
     "rssi": "-80"
   },
   "SECTOR 18": {
-    "valor": 1.65,
-    "timestamp": "10-02-2026 09:18",
+    "valor": 1.69,
+    "timestamp": "10-02-2026 09:23",
     "rssi": "-80"
   },
   "SECTOR 19": {
-    "valor": 2.79,
-    "timestamp": "10-02-2026 09:18",
+    "valor": 3.0,
+    "timestamp": "10-02-2026 09:23",
     "rssi": "-80"
   },
   "SECTOR 10": {
     "valor": 0.0,
-    "timestamp": "10-02-2026 09:20",
+    "timestamp": "10-02-2026 09:25",
     "rssi": -120
   },
   "SECTOR 4": {
@@ -61,12 +61,12 @@
   },
   "SECTOR 8": {
     "valor": 0.0,
-    "timestamp": "10-02-2026 09:22",
-    "rssi": -120
+    "timestamp": "10-02-2026 09:27",
+    "rssi": -118
   },
   "SECTOR 5": {
     "valor": 0.0,
-    "timestamp": "10-02-2026 09:22",
-    "rssi": -113
+    "timestamp": "10-02-2026 09:27",
+    "rssi": -115
   }
 }
