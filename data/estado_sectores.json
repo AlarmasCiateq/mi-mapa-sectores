@@ -1,63 +1,63 @@
 {
   "SECTOR 11": {
     "valor": 1.07,
-    "timestamp": "17-03-2026 01:35",
-    "rssi": "-79"
+    "timestamp": "17-03-2026 01:40",
+    "rssi": "-69"
   },
   "SECTOR 12": {
     "valor": 0.81,
-    "timestamp": "17-03-2026 01:35",
-    "rssi": "-79"
+    "timestamp": "17-03-2026 01:40",
+    "rssi": "-69"
   },
   "SECTOR 13": {
-    "valor": 0.77,
-    "timestamp": "17-03-2026 01:35",
-    "rssi": "-79"
+    "valor": 0.5,
+    "timestamp": "17-03-2026 01:40",
+    "rssi": "-69"
   },
   "SECTOR 13 CHOYAL": {
-    "valor": 2.0,
-    "timestamp": "17-03-2026 01:35",
-    "rssi": "-79"
+    "valor": 2.24,
+    "timestamp": "17-03-2026 01:40",
+    "rssi": "-69"
   },
   "SECTOR 14": {
-    "valor": 0.9,
-    "timestamp": "17-03-2026 01:35",
-    "rssi": "-79"
+    "valor": 0.63,
+    "timestamp": "17-03-2026 01:40",
+    "rssi": "-69"
   },
   "SECTOR 15": {
-    "valor": 0.85,
-    "timestamp": "17-03-2026 01:35",
-    "rssi": "-79"
+    "valor": 1.0,
+    "timestamp": "17-03-2026 01:40",
+    "rssi": "-69"
   },
   "SECTOR 16": {
-    "valor": 2.09,
-    "timestamp": "17-03-2026 01:35",
-    "rssi": "-79"
+    "valor": 2.33,
+    "timestamp": "17-03-2026 01:40",
+    "rssi": "-69"
   },
   "SECTOR 17": {
-    "valor": 2.76,
-    "timestamp": "17-03-2026 01:35",
-    "rssi": "-79"
+    "valor": 2.91,
+    "timestamp": "17-03-2026 01:40",
+    "rssi": "-69"
   },
   "SECTOR 18": {
-    "valor": 2.82,
-    "timestamp": "17-03-2026 01:35",
-    "rssi": "-79"
+    "valor": 2.68,
+    "timestamp": "17-03-2026 01:40",
+    "rssi": "-69"
   },
   "SECTOR 19": {
-    "valor": 1.6,
-    "timestamp": "17-03-2026 01:35",
-    "rssi": "-79"
+    "valor": 1.37,
+    "timestamp": "17-03-2026 01:40",
+    "rssi": "-69"
   },
   "SECTOR 8": {
     "valor": 0.0,
-    "timestamp": "17-03-2026 01:41",
+    "timestamp": "17-03-2026 01:46",
     "rssi": -115
   },
   "SECTOR 5": {
     "valor": 0.0,
-    "timestamp": "17-03-2026 01:41",
-    "rssi": -112
+    "timestamp": "17-03-2026 01:46",
+    "rssi": -113
   },
   "SECTOR 10": {
     "valor": 0.0,
