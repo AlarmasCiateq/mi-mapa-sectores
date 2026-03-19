@@ -1,62 +1,62 @@
 {
   "SECTOR 11": {
-    "valor": 1.19,
-    "timestamp": "18-03-2026 23:00",
-    "rssi": "-75"
+    "valor": 1.39,
+    "timestamp": "18-03-2026 23:05",
+    "rssi": "-68"
   },
   "SECTOR 12": {
-    "valor": 0.82,
-    "timestamp": "18-03-2026 23:00",
-    "rssi": "-75"
+    "valor": 0.91,
+    "timestamp": "18-03-2026 23:05",
+    "rssi": "-68"
   },
   "SECTOR 13": {
-    "valor": 2.33,
-    "timestamp": "18-03-2026 23:00",
-    "rssi": "-75"
+    "valor": 2.45,
+    "timestamp": "18-03-2026 23:05",
+    "rssi": "-68"
   },
   "SECTOR 13 CHOYAL": {
     "valor": 3.0,
-    "timestamp": "18-03-2026 23:00",
-    "rssi": "-75"
+    "timestamp": "18-03-2026 23:05",
+    "rssi": "-68"
   },
   "SECTOR 14": {
-    "valor": 2.38,
-    "timestamp": "18-03-2026 23:00",
-    "rssi": "-75"
+    "valor": 2.31,
+    "timestamp": "18-03-2026 23:05",
+    "rssi": "-68"
   },
   "SECTOR 15": {
-    "valor": 1.81,
-    "timestamp": "18-03-2026 23:00",
-    "rssi": "-75"
+    "valor": 2.03,
+    "timestamp": "18-03-2026 23:05",
+    "rssi": "-68"
   },
   "SECTOR 16": {
-    "valor": 2.51,
-    "timestamp": "18-03-2026 23:00",
-    "rssi": "-75"
+    "valor": 2.48,
+    "timestamp": "18-03-2026 23:05",
+    "rssi": "-68"
   },
   "SECTOR 17": {
-    "valor": 1.94,
-    "timestamp": "18-03-2026 23:00",
-    "rssi": "-75"
+    "valor": 1.87,
+    "timestamp": "18-03-2026 23:05",
+    "rssi": "-68"
   },
   "SECTOR 18": {
-    "valor": 1.0,
-    "timestamp": "18-03-2026 23:00",
-    "rssi": "-75"
+    "valor": 1.24,
+    "timestamp": "18-03-2026 23:05",
+    "rssi": "-68"
   },
   "SECTOR 19": {
-    "valor": 2.99,
-    "timestamp": "18-03-2026 23:00",
-    "rssi": "-75"
+    "valor": 2.85,
+    "timestamp": "18-03-2026 23:05",
+    "rssi": "-68"
   },
   "SECTOR 8": {
     "valor": 0.0,
-    "timestamp": "18-03-2026 23:01",
-    "rssi": -114
+    "timestamp": "18-03-2026 23:06",
+    "rssi": -113
   },
   "SECTOR 5": {
     "valor": 0.0,
-    "timestamp": "18-03-2026 23:02",
+    "timestamp": "18-03-2026 23:07",
     "rssi": -114
   },
   "SECTOR 10": {
