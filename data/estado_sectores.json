@@ -1,53 +1,53 @@
 {
   "SECTOR 11": {
-    "valor": 0.78,
-    "timestamp": "24-03-2026 03:02",
-    "rssi": "-77"
+    "valor": 1.04,
+    "timestamp": "24-03-2026 03:08",
+    "rssi": "-75"
   },
   "SECTOR 12": {
-    "valor": 2.14,
-    "timestamp": "24-03-2026 03:02",
-    "rssi": "-77"
+    "valor": 2.17,
+    "timestamp": "24-03-2026 03:08",
+    "rssi": "-75"
   },
   "SECTOR 13": {
-    "valor": 1.77,
-    "timestamp": "24-03-2026 03:02",
-    "rssi": "-77"
+    "valor": 1.48,
+    "timestamp": "24-03-2026 03:08",
+    "rssi": "-75"
   },
   "SECTOR 13 CHOYAL": {
-    "valor": 2.2,
-    "timestamp": "24-03-2026 03:02",
-    "rssi": "-77"
+    "valor": 2.45,
+    "timestamp": "24-03-2026 03:08",
+    "rssi": "-75"
   },
   "SECTOR 14": {
-    "valor": 1.15,
-    "timestamp": "24-03-2026 03:02",
-    "rssi": "-77"
+    "valor": 0.92,
+    "timestamp": "24-03-2026 03:08",
+    "rssi": "-75"
   },
   "SECTOR 15": {
-    "valor": 1.78,
-    "timestamp": "24-03-2026 03:02",
-    "rssi": "-77"
+    "valor": 2.0,
+    "timestamp": "24-03-2026 03:08",
+    "rssi": "-75"
   },
   "SECTOR 16": {
-    "valor": 0.77,
-    "timestamp": "24-03-2026 03:02",
-    "rssi": "-77"
+    "valor": 0.55,
+    "timestamp": "24-03-2026 03:08",
+    "rssi": "-75"
   },
   "SECTOR 17": {
-    "valor": 1.81,
-    "timestamp": "24-03-2026 03:02",
-    "rssi": "-77"
+    "valor": 1.55,
+    "timestamp": "24-03-2026 03:08",
+    "rssi": "-75"
   },
   "SECTOR 18": {
-    "valor": 1.17,
-    "timestamp": "24-03-2026 03:02",
-    "rssi": "-77"
+    "valor": 0.93,
+    "timestamp": "24-03-2026 03:08",
+    "rssi": "-75"
   },
   "SECTOR 19": {
-    "valor": 2.7,
-    "timestamp": "24-03-2026 03:02",
-    "rssi": "-77"
+    "valor": 2.65,
+    "timestamp": "24-03-2026 03:08",
+    "rssi": "-75"
   },
   "SECTOR 8": {
     "valor": 0.0,
@@ -56,8 +56,8 @@
   },
   "SECTOR 5": {
     "valor": 0.0,
-    "timestamp": "24-03-2026 03:06",
-    "rssi": -116
+    "timestamp": "24-03-2026 03:11",
+    "rssi": -115
   },
   "SECTOR 10": {
     "valor": 0.0,
