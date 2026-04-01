@@ -1,53 +1,53 @@
 {
   "SECTOR 11": {
-    "valor": 2.68,
-    "timestamp": "01-04-2026 08:02",
-    "rssi": "-74"
+    "valor": 2.29,
+    "timestamp": "01-04-2026 08:07",
+    "rssi": "-79"
   },
   "SECTOR 12": {
-    "valor": 2.94,
-    "timestamp": "01-04-2026 08:02",
-    "rssi": "-74"
+    "valor": 3.0,
+    "timestamp": "01-04-2026 08:07",
+    "rssi": "-79"
   },
   "SECTOR 13": {
-    "valor": 2.39,
-    "timestamp": "01-04-2026 08:02",
-    "rssi": "-74"
+    "valor": 2.92,
+    "timestamp": "01-04-2026 08:07",
+    "rssi": "-79"
   },
   "SECTOR 13 CHOYAL": {
-    "valor": 1.57,
-    "timestamp": "01-04-2026 08:02",
-    "rssi": "-74"
+    "valor": 1.38,
+    "timestamp": "01-04-2026 08:07",
+    "rssi": "-79"
   },
   "SECTOR 14": {
-    "valor": 0.95,
-    "timestamp": "01-04-2026 08:02",
-    "rssi": "-74"
+    "valor": 0.86,
+    "timestamp": "01-04-2026 08:07",
+    "rssi": "-79"
   },
   "SECTOR 15": {
-    "valor": 1.15,
-    "timestamp": "01-04-2026 08:02",
-    "rssi": "-74"
+    "valor": 1.21,
+    "timestamp": "01-04-2026 08:07",
+    "rssi": "-79"
   },
   "SECTOR 16": {
-    "valor": 1.93,
-    "timestamp": "01-04-2026 08:02",
-    "rssi": "-74"
+    "valor": 1.67,
+    "timestamp": "01-04-2026 08:07",
+    "rssi": "-79"
   },
   "SECTOR 17": {
-    "valor": 2.61,
-    "timestamp": "01-04-2026 08:02",
-    "rssi": "-74"
+    "valor": 2.65,
+    "timestamp": "01-04-2026 08:07",
+    "rssi": "-79"
   },
   "SECTOR 18": {
-    "valor": 0.5,
-    "timestamp": "01-04-2026 08:02",
-    "rssi": "-74"
+    "valor": 0.81,
+    "timestamp": "01-04-2026 08:07",
+    "rssi": "-79"
   },
   "SECTOR 19": {
-    "valor": 2.36,
-    "timestamp": "01-04-2026 08:02",
-    "rssi": "-74"
+    "valor": 2.71,
+    "timestamp": "01-04-2026 08:07",
+    "rssi": "-79"
   },
   "SECTOR 8": {
     "valor": 0.0,
@@ -56,8 +56,8 @@
   },
   "SECTOR 5": {
     "valor": 0.0,
-    "timestamp": "01-04-2026 08:07",
-    "rssi": -113
+    "timestamp": "01-04-2026 08:12",
+    "rssi": -117
   },
   "SECTOR 10": {
     "valor": 0.0,
