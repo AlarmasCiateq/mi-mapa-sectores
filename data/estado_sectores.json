@@ -1,53 +1,53 @@
 {
   "SECTOR 11": {
-    "valor": 2.56,
-    "timestamp": "15-04-2026 00:52",
-    "rssi": "-73"
+    "valor": 2.42,
+    "timestamp": "15-04-2026 00:57",
+    "rssi": "-80"
   },
   "SECTOR 12": {
-    "valor": 2.72,
-    "timestamp": "15-04-2026 00:52",
-    "rssi": "-73"
+    "valor": 2.62,
+    "timestamp": "15-04-2026 00:57",
+    "rssi": "-80"
   },
   "SECTOR 13": {
-    "valor": 2.52,
-    "timestamp": "15-04-2026 00:52",
-    "rssi": "-73"
+    "valor": 2.6,
+    "timestamp": "15-04-2026 00:57",
+    "rssi": "-80"
   },
   "SECTOR 13 CHOYAL": {
-    "valor": 1.64,
-    "timestamp": "15-04-2026 00:52",
-    "rssi": "-73"
+    "valor": 1.54,
+    "timestamp": "15-04-2026 00:57",
+    "rssi": "-80"
   },
   "SECTOR 14": {
-    "valor": 1.05,
-    "timestamp": "15-04-2026 00:52",
-    "rssi": "-73"
+    "valor": 1.18,
+    "timestamp": "15-04-2026 00:57",
+    "rssi": "-80"
   },
   "SECTOR 15": {
-    "valor": 1.19,
-    "timestamp": "15-04-2026 00:52",
-    "rssi": "-73"
+    "valor": 0.93,
+    "timestamp": "15-04-2026 00:57",
+    "rssi": "-80"
   },
   "SECTOR 16": {
-    "valor": 1.89,
-    "timestamp": "15-04-2026 00:52",
-    "rssi": "-73"
+    "valor": 1.67,
+    "timestamp": "15-04-2026 00:57",
+    "rssi": "-80"
   },
   "SECTOR 17": {
-    "valor": 2.78,
-    "timestamp": "15-04-2026 00:52",
-    "rssi": "-73"
+    "valor": 2.56,
+    "timestamp": "15-04-2026 00:57",
+    "rssi": "-80"
   },
   "SECTOR 18": {
-    "valor": 0.63,
-    "timestamp": "15-04-2026 00:52",
-    "rssi": "-73"
+    "valor": 0.56,
+    "timestamp": "15-04-2026 00:57",
+    "rssi": "-80"
   },
   "SECTOR 19": {
-    "valor": 2.73,
-    "timestamp": "15-04-2026 00:52",
-    "rssi": "-73"
+    "valor": 2.44,
+    "timestamp": "15-04-2026 00:57",
+    "rssi": "-80"
   },
   "SECTOR 8": {
     "valor": 0.0,
@@ -56,8 +56,8 @@
   },
   "SECTOR 5": {
     "valor": 0.0,
-    "timestamp": "15-04-2026 00:54",
-    "rssi": -118
+    "timestamp": "15-04-2026 00:59",
+    "rssi": -121
   },
   "SECTOR 10": {
     "valor": 0.0,
