@@ -1,52 +1,52 @@
 {
   "SECTOR 11": {
-    "valor": 2.33,
-    "timestamp": "12-05-2026 10:06",
+    "valor": 2.58,
+    "timestamp": "12-05-2026 10:11",
     "rssi": "-72"
   },
   "SECTOR 12": {
-    "valor": 2.5,
-    "timestamp": "12-05-2026 10:06",
+    "valor": 2.6,
+    "timestamp": "12-05-2026 10:11",
     "rssi": "-72"
   },
   "SECTOR 13": {
-    "valor": 2.6,
-    "timestamp": "12-05-2026 10:06",
+    "valor": 2.87,
+    "timestamp": "12-05-2026 10:11",
     "rssi": "-72"
   },
   "SECTOR 13 CHOYAL": {
-    "valor": 1.91,
-    "timestamp": "12-05-2026 10:06",
+    "valor": 1.68,
+    "timestamp": "12-05-2026 10:11",
     "rssi": "-72"
   },
   "SECTOR 14": {
-    "valor": 0.5,
-    "timestamp": "12-05-2026 10:06",
+    "valor": 0.92,
+    "timestamp": "12-05-2026 10:11",
     "rssi": "-72"
   },
   "SECTOR 15": {
-    "valor": 0.79,
-    "timestamp": "12-05-2026 10:06",
+    "valor": 0.64,
+    "timestamp": "12-05-2026 10:11",
     "rssi": "-72"
   },
   "SECTOR 16": {
-    "valor": 2.01,
-    "timestamp": "12-05-2026 10:06",
+    "valor": 1.66,
+    "timestamp": "12-05-2026 10:11",
     "rssi": "-72"
   },
   "SECTOR 17": {
-    "valor": 2.47,
-    "timestamp": "12-05-2026 10:06",
+    "valor": 2.81,
+    "timestamp": "12-05-2026 10:11",
     "rssi": "-72"
   },
   "SECTOR 18": {
-    "valor": 0.68,
-    "timestamp": "12-05-2026 10:06",
+    "valor": 0.5,
+    "timestamp": "12-05-2026 10:11",
     "rssi": "-72"
   },
   "SECTOR 19": {
-    "valor": 3.0,
-    "timestamp": "12-05-2026 10:06",
+    "valor": 2.86,
+    "timestamp": "12-05-2026 10:11",
     "rssi": "-72"
   },
   "SECTOR 8": {
@@ -66,17 +66,17 @@
   },
   "SECTOR 1": {
     "valor": 0.0,
-    "timestamp": "12-05-2026 10:06",
-    "rssi": -120
+    "timestamp": "12-05-2026 10:16",
+    "rssi": -118
   },
   "SECTOR 2": {
     "valor": 0.0,
-    "timestamp": "12-05-2026 10:14",
-    "rssi": -118
+    "timestamp": "12-05-2026 10:19",
+    "rssi": -116
   },
   "SECTOR 3": {
     "valor": 0.0,
-    "timestamp": "12-05-2026 10:06",
+    "timestamp": "12-05-2026 10:16",
     "rssi": -118
   },
   "SECTOR 9": {
