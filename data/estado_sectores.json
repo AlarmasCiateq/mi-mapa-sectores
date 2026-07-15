@@ -1,53 +1,53 @@
 {
   "SECTOR 11": {
-    "valor": 2.54,
-    "timestamp": "15-07-2026 04:18",
-    "rssi": "-82"
+    "valor": 2.16,
+    "timestamp": "15-07-2026 04:23",
+    "rssi": "-80"
   },
   "SECTOR 12": {
-    "valor": 0.5,
-    "timestamp": "15-07-2026 04:18",
-    "rssi": "-82"
+    "valor": 0.77,
+    "timestamp": "15-07-2026 04:23",
+    "rssi": "-80"
   },
   "SECTOR 13": {
-    "valor": 0.88,
-    "timestamp": "15-07-2026 04:18",
-    "rssi": "-82"
+    "valor": 1.26,
+    "timestamp": "15-07-2026 04:23",
+    "rssi": "-80"
   },
   "SECTOR 13 CHOYAL": {
-    "valor": 0.97,
-    "timestamp": "15-07-2026 04:18",
-    "rssi": "-82"
+    "valor": 0.77,
+    "timestamp": "15-07-2026 04:23",
+    "rssi": "-80"
   },
   "SECTOR 14": {
-    "valor": 3.0,
-    "timestamp": "15-07-2026 04:18",
-    "rssi": "-82"
+    "valor": 2.93,
+    "timestamp": "15-07-2026 04:23",
+    "rssi": "-80"
   },
   "SECTOR 15": {
-    "valor": 2.27,
-    "timestamp": "15-07-2026 04:18",
-    "rssi": "-82"
+    "valor": 2.34,
+    "timestamp": "15-07-2026 04:23",
+    "rssi": "-80"
   },
   "SECTOR 16": {
-    "valor": 2.36,
-    "timestamp": "15-07-2026 04:18",
-    "rssi": "-82"
+    "valor": 2.34,
+    "timestamp": "15-07-2026 04:23",
+    "rssi": "-80"
   },
   "SECTOR 17": {
-    "valor": 1.08,
-    "timestamp": "15-07-2026 04:18",
-    "rssi": "-82"
+    "valor": 1.09,
+    "timestamp": "15-07-2026 04:23",
+    "rssi": "-80"
   },
   "SECTOR 18": {
-    "valor": 2.34,
-    "timestamp": "15-07-2026 04:18",
-    "rssi": "-82"
+    "valor": 2.32,
+    "timestamp": "15-07-2026 04:23",
+    "rssi": "-80"
   },
   "SECTOR 19": {
-    "valor": 1.68,
-    "timestamp": "15-07-2026 04:18",
-    "rssi": "-82"
+    "valor": 2.16,
+    "timestamp": "15-07-2026 04:23",
+    "rssi": "-80"
   },
   "SECTOR 8": {
     "valor": 0.0,
